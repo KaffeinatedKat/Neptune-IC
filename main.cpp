@@ -38,7 +38,7 @@ struct User {
 
     User login(Exceptions Error, std::string command[]) {
         User Student;
-        std::ifstream f("profiles.json");
+        std::ifstream f("../profiles.json");
         json profiles = json::parse(f);
         json student_json, grades_json;
         std::string login_method = profiles["user"][command[1]]["login_method"].get<std::string>();
@@ -46,8 +46,8 @@ struct User {
 
         try {
             if (login_method == "json_file") {
-                std::ifstream g(profiles["user"][command[1]]["grades_json"].get<std::string>());
-                std::ifstream s(profiles["user"][command[1]]["student_json"].get<std::string>());
+                std::ifstream g("../" + profiles["user"][command[1]]["grades_json"].get<std::string>());
+                std::ifstream s("../" + profiles["user"][command[1]]["student_json"].get<std::string>());
                 Student.grades_json = json::parse(g);
                 Student.student_json = json::parse(s);
                 Student.logged_in = true;
