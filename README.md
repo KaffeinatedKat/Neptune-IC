@@ -12,6 +12,8 @@ make
 
 # Supported login methods
 
+#### Currently only Student Login is supported at this time
+
 ## Microsoft login
 #### Microsoft login is "supported", only tested with 1 school
 
