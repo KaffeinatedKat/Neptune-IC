@@ -10,6 +10,11 @@ cmake ..
 make
 ```
 
+## Profiles
+Neptune-IC uses profiles to save login information for users, profiles are stored in `profiles.json` and currently must be manually added. Examples are provided in `profilesExample.json`
+
+Logging in with a profile is as simple as `login [name-of-user]`
+
 # Supported login methods
 
 #### Currently only Student Login is supported at this time
