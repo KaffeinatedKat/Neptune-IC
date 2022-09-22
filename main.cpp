@@ -41,10 +41,10 @@ struct User {
         std::ifstream f("../profiles.json");
         json profiles = json::parse(f);
         json student_json, grades_json;
-        std::string login_method = profiles["user"][command[1]]["login_method"].get<std::string>();
-                
-
+                        
         try {
+            std::string login_method = profiles["user"][command[1]]["login_method"].get<std::string>();
+
             if (login_method == "json_file") {
                 std::ifstream g("../" + profiles["user"][command[1]]["grades_json"].get<std::string>());
                 std::ifstream s("../" + profiles["user"][command[1]]["student_json"].get<std::string>());
@@ -94,19 +94,22 @@ struct User {
     }
 
 
-    void class_info(cpr::Parameters parameters, std::string url, std::string login_path, int sectionID) {
+    void class_info(User Student, int sectionID) {
         cpr::Session session;
 
-        session.SetUrl(cpr::Url{url + login_path});
-        session.SetParameters(parameters);
+        session.SetUrl(cpr::Url{Student.url + Student.login_path});
+        session.SetParameters(Student.parameters);
         cpr::Response r = session.Post();
-        session.SetUrl(cpr::Url{url + "/campus/resources/portal/grades/detail/" + std::to_string(sectionID)});
+        session.SetUrl(cpr::Url{Student.url + "/campus/resources/portal/grades/detail/" + std::to_string(sectionID)});
         cpr::Response c = session.Get();
         json course_json = json::parse(c.text);
 
-        for (auto& it : course_json["details"][0]["categories"][0]["assignments"].items()) {
-            std::cout << it.value()["assignmentName"] << std::endl;
+        std::cout << "\n" << course_json["details"][0]["task"]["courseName"] << " [" << course_json["details"][0]["task"]["progressScore"] << "] (" << course_json["details"][0]["task"]["progressPercent"] << ")\n";
+
+        for (auto& it : course_json["details"][0]["categories"].items()) {
+            std::cout << "\t" << it.value()["name"] << "  [" << it.value()["progress"]["progressPointsEarned"] << "/" << it.value()["progress"]["progressTotalPoints"] << "] (" << it.value()["progress"]["progressPercent"] << "%)\n";
         }
+        std::cout << std::endl;
     }
 };
 
@@ -125,8 +128,9 @@ void split(std::string line, std::string array[]) {
 
 
 void list_classes(json student_info) {
+    int i = 0;
     for (auto& it : student_info[0]["terms"][0]["courses"].items()) {
-        std::cout << it.value()["courseName"] << std::endl;
+        std::cout << "[" << i++ << "] " << it.value()["courseName"] << std::endl;
     }
 };
 
@@ -175,8 +179,7 @@ int main() {
                 try {
                     auto index = Student.courses.begin();
                     std::advance(index, std::stoi(command[1])); //  Get class sectionID from index
-                    std::cout << *index << std::endl;
-                    Student.class_info(Student.parameters, Student.url, Student.login_path, *index);
+                    Student.class_info(Student, *index);
                 } catch (std::invalid_argument) {
                     Error.notANumber(command[0]);
                     continue;
