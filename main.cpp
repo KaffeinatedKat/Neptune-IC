@@ -52,12 +52,12 @@ struct User {
                 Student.student_json = json::parse(s);
                 Student.logged_in = true;
             } else if (login_method == "microsoft") {
-                Student.url = profiles["user"][command[1]]["campus_url"].get<std::string>();
-                Student.login_path = profiles["user"][command[1]]["login_path"].get<std::string>();
-                std::string saml = profiles["user"][command[1]]["saml"].get<std::string>();
-                Student.parameters = cpr::Parameters{{"SAMLResponse", saml}};
                 cpr::Session session;
-
+                std::string saml = profiles["user"][command[1]]["saml"].get<std::string>(); //  SAMLResponse
+                Student.login_path = profiles["user"][command[1]]["login_path"].get<std::string>(); //  SAMLResponse POST path
+                Student.url = profiles["user"][command[1]]["campus_url"].get<std::string>(); //  Infinite Campus URL
+                Student.parameters = cpr::Parameters{{"SAMLResponse", saml}};
+                
                 session.SetUrl(cpr::Url{Student.url + Student.login_path});
                 session.SetParameters(Student.parameters);
                 cpr::Response r = session.Post();       
@@ -72,7 +72,7 @@ struct User {
             }
 
             if (Student.logged_in) {
-                for (auto& it : Student.grades_json[0]["terms"][0]["courses"].items()) {
+                for (auto& it : Student.grades_json[0]["terms"][0]["courses"].items()) { //  Add each course's ID into a list to access each class via an index
                     Student.courses.push_back(it.value()["sectionID"]);
                 }
 
@@ -104,9 +104,11 @@ struct User {
         cpr::Response c = session.Get();
         json course_json = json::parse(c.text);
 
+        //  "ClassName" ["Grade"] (Percentage)
         std::cout << "\n" << course_json["details"][0]["task"]["courseName"] << " [" << course_json["details"][0]["task"]["progressScore"] << "] (" << course_json["details"][0]["task"]["progressPercent"] << ")\n";
 
         for (auto& it : course_json["details"][0]["categories"].items()) {
+            //  "Category"  [earned/total] (Percentage)
             std::cout << "\t" << it.value()["name"] << "  [" << it.value()["progress"]["progressPointsEarned"] << "/" << it.value()["progress"]["progressTotalPoints"] << "] (" << it.value()["progress"]["progressPercent"] << "%)\n";
         }
         std::cout << std::endl;
@@ -180,8 +182,8 @@ int main() {
             } else {
                 try {
                     auto index = Student.courses.begin();
-                    std::advance(index, std::stoi(command[1])); //  Get class sectionID from index
-                    Student.class_info(Student, *index);
+                    std::advance(index, std::stoi(command[1])); //  Get course ID from index
+                    Student.class_info(Student, *index); //  Display course information
                 } catch (std::invalid_argument) {
                     Error.notANumber(command[0]);
                     continue;
