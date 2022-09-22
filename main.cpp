@@ -132,6 +132,7 @@ void list_classes(json student_info) {
     for (auto& it : student_info[0]["terms"][0]["courses"].items()) {
         std::cout << "[" << i++ << "] " << it.value()["courseName"] << std::endl;
     }
+    std::cout << std::endl;
 };
 
 
@@ -156,6 +157,7 @@ int main() {
                 Error.notLoggedIn(command[0] + " " + command[1]);    
                 continue;
             } else if (command[1] == "classes") {
+                std::cout << std::endl;
                 list_classes(Student.grades_json);
             } else if (command[1] == "info") {
                 Student.list_info();
