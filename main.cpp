@@ -96,7 +96,7 @@ struct User {
 
 
     void class_info(User Student, int sectionID, int index) {
-        int n = 0;
+        int n = -1;
         cpr::Session session;
 
         session.SetUrl(cpr::Url{Student.url + Student.login_path});
@@ -126,8 +126,12 @@ struct User {
 
 
     void expandCategory(User Student, json course_json) {
-        for (auto& it : course_json["assignments"].items()) {   
-            printf("\t\t%s [%.2f/%.2f]\n", std::string(it.value()["assignmentName"]).c_str(), std::stof(it.value()["scorePoints"].get<std::string>()), it.value()["totalPoints"].get<double>());
+        for (auto& it : course_json["assignments"].items()) {
+            try { 
+                printf("\t\t%s [%.2f/%.2f]\n", std::string(it.value()["assignmentName"]).c_str(), std::stof(it.value()["scorePoints"].get<std::string>()), it.value()["totalPoints"].get<double>());
+            } catch (nlohmann::detail::type_error) {
+                continue;
+            }
         }
     }
 };
@@ -200,7 +204,7 @@ int main() {
                 try {
                     auto index = Student.courses.begin();
                     std::advance(index, std::stoi(command[1])); //  Get class sectionID from index
-                    if (command[2] == "") { command[2] = "0"; };
+                    if (command[2] == "") { command[2] = "-1"; };
                     Student.class_info(Student, *index, std::stoi(command[2]));
                 } catch (std::invalid_argument) {
                     Error.notANumber(command[0]);
