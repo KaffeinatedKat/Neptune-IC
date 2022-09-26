@@ -42,6 +42,7 @@ struct User {
         json profiles = json::parse(f);
         json student_json, grades_json;
                         
+
         try {
             std::string login_method = profiles["user"][command[1]]["login_method"].get<std::string>();
 
@@ -94,7 +95,8 @@ struct User {
     }
 
 
-    void class_info(User Student, int sectionID) {
+    void class_info(User Student, int sectionID, int index) {
+        int n = 0;
         cpr::Session session;
 
         session.SetUrl(cpr::Url{Student.url + Student.login_path});
@@ -107,9 +109,26 @@ struct User {
         std::cout << "\n" << course_json["details"][0]["task"]["courseName"] << " [" << course_json["details"][0]["task"]["progressScore"] << "] (" << course_json["details"][0]["task"]["progressPercent"] << ")\n";
 
         for (auto& it : course_json["details"][0]["categories"].items()) {
-            std::cout << "\t" << it.value()["name"] << "  [" << it.value()["progress"]["progressPointsEarned"] << "/" << it.value()["progress"]["progressTotalPoints"] << "] (" << it.value()["progress"]["progressPercent"] << "%)\n";
+            n++;
+            std::cout << "\t[" << n << "] " << it.value()["name"] << "  [" << it.value()["progress"]["progressPointsEarned"] << "/" << it.value()["progress"]["progressTotalPoints"] << "] (" << it.value()["progress"]["progressPercent"] << "%)";
+            
+            if (index == n) {
+                std::cout << " >>\n";
+                expandCategory(Student, it.value());
+            } else {
+                std::cout << "\n";
+            }
         }
         std::cout << std::endl;
+    }
+
+
+
+    void expandCategory(User Student, json course_json) {
+        for (auto& it : course_json["assignments"].items()) {
+            
+            printf("\t\t%s [%.2f/%.2f]\n", std::string(it.value()["assignmentName"]).c_str(), std::stof(it.value()["scorePoints"].get<std::string>()), it.value()["totalPoints"].get<double>());
+        }
     }
 };
 
@@ -140,9 +159,9 @@ int main() {
     User Student;
     Exceptions Error;
     std::string input;
-    std::string command[4];
 
     while (true) {
+        std::string command[4];
         std::cout << "[" << Student.first_name << "] (?): ";
         std::getline(std::cin, input);
         split(input, command);
@@ -179,7 +198,8 @@ int main() {
                 try {
                     auto index = Student.courses.begin();
                     std::advance(index, std::stoi(command[1])); //  Get class sectionID from index
-                    Student.class_info(Student, *index);
+                    if (command[2] == "") { command[2] = "0"; };
+                    Student.class_info(Student, *index, std::stoi(command[2]));
                 } catch (std::invalid_argument) {
                     Error.notANumber(command[0]);
                     continue;
