@@ -53,12 +53,12 @@ struct User {
                 Student.student_json = json::parse(s);
                 Student.logged_in = true;
             } else if (login_method == "microsoft") {
-                Student.url = profiles["user"][command[1]]["campus_url"].get<std::string>();
-                Student.login_path = profiles["user"][command[1]]["login_path"].get<std::string>();
-                std::string saml = profiles["user"][command[1]]["saml"].get<std::string>();
-                Student.parameters = cpr::Parameters{{"SAMLResponse", saml}};
                 cpr::Session session;
-
+                std::string saml = profiles["user"][command[1]]["saml"].get<std::string>(); //  SAMLResponse
+                Student.login_path = profiles["user"][command[1]]["login_path"].get<std::string>(); //  SAMLResponse POST path
+                Student.url = profiles["user"][command[1]]["campus_url"].get<std::string>(); //  Infinite Campus URL
+                Student.parameters = cpr::Parameters{{"SAMLResponse", saml}};
+                
                 session.SetUrl(cpr::Url{Student.url + Student.login_path});
                 session.SetParameters(Student.parameters);
                 cpr::Response r = session.Post();       
@@ -73,7 +73,7 @@ struct User {
             }
 
             if (Student.logged_in) {
-                for (auto& it : Student.grades_json[0]["terms"][0]["courses"].items()) {
+                for (auto& it : Student.grades_json[0]["terms"][0]["courses"].items()) { //  Add each course's ID into a list to access each class via an index
                     Student.courses.push_back(it.value()["sectionID"]);
                 }
 
@@ -106,6 +106,7 @@ struct User {
         cpr::Response c = session.Get();
         json course_json = json::parse(c.text);
 
+        //  "ClassName" ["Grade"] (Percentage)
         std::cout << "\n" << course_json["details"][0]["task"]["courseName"] << " [" << course_json["details"][0]["task"]["progressScore"] << "] (" << course_json["details"][0]["task"]["progressPercent"] << ")\n";
 
         for (auto& it : course_json["details"][0]["categories"].items()) {
@@ -125,8 +126,7 @@ struct User {
 
 
     void expandCategory(User Student, json course_json) {
-        for (auto& it : course_json["assignments"].items()) {
-            
+        for (auto& it : course_json["assignments"].items()) {   
             printf("\t\t%s [%.2f/%.2f]\n", std::string(it.value()["assignmentName"]).c_str(), std::stof(it.value()["scorePoints"].get<std::string>()), it.value()["totalPoints"].get<double>());
         }
     }
@@ -151,6 +151,7 @@ void list_classes(json student_info) {
     for (auto& it : student_info[0]["terms"][0]["courses"].items()) {
         std::cout << "[" << i++ << "] " << it.value()["courseName"] << std::endl;
     }
+    std::cout << std::endl;
 };
 
 
@@ -175,6 +176,7 @@ int main() {
                 Error.notLoggedIn(command[0] + " " + command[1]);    
                 continue;
             } else if (command[1] == "classes") {
+                std::cout << std::endl;
                 list_classes(Student.grades_json);
             } else if (command[1] == "info") {
                 Student.list_info();
