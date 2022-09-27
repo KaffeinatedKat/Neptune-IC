@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.10)
 project(Neptune)
 
 # add the executable
-add_executable(neptune main.cpp)
+add_executable(neptune src/main.cpp)
 
 include(FetchContent)
 FetchContent_Declare(cpr GIT_REPOSITORY https://github.com/libcpr/cpr.git
