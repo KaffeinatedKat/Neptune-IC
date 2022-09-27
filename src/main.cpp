@@ -17,16 +17,16 @@ void split(std::string line, std::string array[]);
 void userInput(User Student, std::string command[]);
 
 struct Exceptions {
-    void notLoggedIn(std::string command) {
-        std::cout << "Neptune: You must login to use '" << command << "'\n";
+    std::string notLoggedIn(std::string command) {
+        return "You must login to use '" + command + "'\n\n";
     };
 
-    void userNotFound(std::string user) {
-        std::cout << "Neptune: No profile for user '" << user << "'\nTry '? profiles' for more information\n";
+    std::string userNotFound(std::string user) {
+        return "No profile for user '" + user + "'\nTry '? profiles' for more information\n\n";
     };
 
-    void notANumber(std::string command) {
-        std::cout << "Neptune: Command '" << command << "' takes only numbers as input\n";
+    std::string notANumber(std::string command) {
+        return "Command '" + command + "' takes only numbers as input\n\n";
     };
 };
 
@@ -37,6 +37,7 @@ struct User {
     bool logged_in = false;
     cpr::Parameters parameters;
     std::string first_name = "None";
+    std::string error;
     std::string url;
     std::string login_path;
     std::list<int> courses;
@@ -86,7 +87,7 @@ struct User {
                 std::cout << "Neptune: Successfully logged in as " << Student.first_name << std::endl;
             }
         } catch (nlohmann::detail::type_error) {
-            Error.userNotFound(command[1]);
+            Student.error = Error.userNotFound(command[1]);
         }
         return Student;
     };
@@ -204,7 +205,15 @@ int main() {
         json grades_json;
 
         if (command[0] == "login") {
+            if (command[1] == "") {
+                msg = "You must specify a user\n\n";
+                continue;
+            }
             Student = Student.login(Error, command);
+            if (Student.logged_in != true) {
+                msg = Student.error;
+                continue;
+            }
             Student.allClassesMenu(Student, Student.grades_json);
             Student.logged_in = false;
             Student.first_name = "None";
