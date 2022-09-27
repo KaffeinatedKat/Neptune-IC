@@ -93,7 +93,7 @@ struct User {
 
     void classMenu(User Student, int sectionID) {
         int n = -1;
-        int index;
+        int index = -1;
         std::string input;
         cpr::Session session;
 
