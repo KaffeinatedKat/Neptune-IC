@@ -1,4 +1,5 @@
 #include <iostream>
+#include <cstdlib>
 #include <nlohmann/detail/exceptions.hpp>
 #include <string>
 #include <sstream>
@@ -6,10 +7,14 @@
 #include <exception>
 #include <cpr/cpr.h>
 #include <nlohmann/json.hpp>
+#include "help_text.cpp"
 
 using json = nlohmann::json;
 
-
+struct User;
+void newScreen();
+void split(std::string line, std::string array[]);
+void userInput(User Student, std::string command[]);
 
 struct Exceptions {
     void notLoggedIn(std::string command) {
@@ -84,19 +89,12 @@ struct User {
             Error.userNotFound(command[1]);
         }
         return Student;
-    }
+    };
 
-
-    void list_info() {
-        std::cout << "First Name: " << student_json[0]["firstName"]
-                << "\nLast Name: " << student_json[0]["lastName"]
-                << "\nSchool: " << student_json[0]["enrollments"][0]["schoolName"] << std::endl;
-
-    }
-
-
-    void class_info(User Student, int sectionID, int index) {
+    void class_info(User Student, int sectionID) {
         int n = -1;
+        int index;
+        std::string input;
         cpr::Session session;
 
         session.SetUrl(cpr::Url{Student.url + Student.login_path});
@@ -106,34 +104,62 @@ struct User {
         cpr::Response c = session.Get();
         json course_json = json::parse(c.text);
 
-        //  "ClassName" ["Grade"] (Percentage)
-        std::cout << "\n" << course_json["details"][0]["task"]["courseName"] << " [" << course_json["details"][0]["task"]["progressScore"] << "] (" << course_json["details"][0]["task"]["progressPercent"] << ")\n";
+        while (true) {
+            newScreen();
 
-        for (auto& it : course_json["details"][0]["categories"].items()) {
-            n++;
-            std::cout << "\t[" << n << "] " << it.value()["name"] << "  [" << it.value()["progress"]["progressPointsEarned"] << "/" << it.value()["progress"]["progressTotalPoints"] << "] (" << it.value()["progress"]["progressPercent"] << "%)";
+            //  "ClassName" ["Grade"] (Percentage)
+            std::cout << course_json["details"][0]["task"]["courseName"] << " [" << course_json["details"][0]["task"]["progressScore"] << "] (" << course_json["details"][0]["task"]["progressPercent"] << ")\n";
+
+            for (auto& it : course_json["details"][0]["categories"].items()) {
+                n++;
+                std::cout << "\t[" << n << "] " << it.value()["name"] << "  [" << it.value()["progress"]["progressPointsEarned"] << "/" << it.value()["progress"]["progressTotalPoints"] << "] (" << it.value()["progress"]["progressPercent"] << "%)";
             
-            if (index == n) {
-                std::cout << " >>\n";
-                expandCategory(Student, it.value());
-            } else {
-                std::cout << "\n";
+                if (index == n) {
+                    std::cout << " >>\n";
+                    expandCategory(Student, it.value());
+                } else {
+                    std::cout << "\n";
+                }
             }
+            std::cout << std::endl;
+            
+            n = -1;
+            std::string command[4];
+            userInput(Student, command);
+            if (command[0] == "b") { break; };
+            index = std::stoi(command[0]);
         }
-        std::cout << std::endl;
     }
 
-
+    void list_classes(User Student, json student_info) {
+        while (true) {
+            int i = 0;
+            newScreen();
+            for (auto& it : student_info[0]["terms"][0]["courses"].items()) {
+                std::cout << "[" << i++ << "] " << it.value()["courseName"] << std::endl;
+            }
+            std::cout << std::endl;
+            std::string command[4];
+            userInput(Student, command);
+            auto index = Student.courses.begin();
+            std::advance(index, std::stoi(command[0])); //  Get class sectionID from index
+            Student.class_info(Student, *index);
+        }
+    };
 
     void expandCategory(User Student, json course_json) {
+        std::string missing;
         for (auto& it : course_json["assignments"].items()) {
-            try { 
-                printf("\t\t%s [%.2f/%.2f]\n", std::string(it.value()["assignmentName"]).c_str(), std::stof(it.value()["scorePoints"].get<std::string>()), it.value()["totalPoints"].get<double>());
+            missing = "    ";
+            try {
+                if (it.value()["missing"]) { missing = "\033[1;31m[M] \033[0m"; }
+                printf("\t\t%s%s %3s%.2f/%.2f]\n", missing.c_str(), std::string(it.value()["assignmentName"]).c_str(), std::string("[").c_str(), std::stof(it.value()["scorePoints"].get<std::string>()), it.value()["totalPoints"].get<double>());
             } catch (nlohmann::detail::type_error) {
                 continue;
             }
         }
     }
+
 };
 
 
@@ -150,13 +176,22 @@ void split(std::string line, std::string array[]) {
 
 
 
-void list_classes(json student_info) {
-    int i = 0;
-    for (auto& it : student_info[0]["terms"][0]["courses"].items()) {
-        std::cout << "[" << i++ << "] " << it.value()["courseName"] << std::endl;
-    }
-    std::cout << std::endl;
-};
+
+
+
+void newScreen() {
+    std::system("clear");
+    printf("<===== Neptune =====>\n\n");
+}
+
+
+
+void userInput(User Student, std::string command[]) {
+    std::string input;
+    std::cout << "[" << Student.first_name << "] (?): ";
+    std::getline(std::cin, input);
+    split(input, command);
+}
 
 
 
@@ -164,27 +199,17 @@ int main() {
     User Student;
     Exceptions Error;
     std::string input;
+    newScreen();
+    printf("login with `login [profile]`\nFor help on creating profiles, do `? profiles`\n\n");
 
     while (true) {
         std::string command[4];
-        std::cout << "[" << Student.first_name << "] (?): ";
-        std::getline(std::cin, input);
-        split(input, command);
+        userInput(Student, command);
         json grades_json;
 
         if (command[0] == "login") {
             Student = Student.login(Error, command);
-
-        } else if (command[0] == "list") {
-            if (Student.logged_in == false) {
-                Error.notLoggedIn(command[0] + " " + command[1]);    
-                continue;
-            } else if (command[1] == "classes") {
-                std::cout << std::endl;
-                list_classes(Student.grades_json);
-            } else if (command[1] == "info") {
-                Student.list_info();
-            }
+            Student.list_classes(Student, Student.grades_json);
 
         } else if (command[0] == "logout") {
             if (Student.logged_in == false) {
@@ -194,24 +219,13 @@ int main() {
                 Student.logged_in = false;
                 std::cout << "Neptune: Successfully logged out as '" << Student.first_name << "'\n";
                 Student.first_name = "None";
+                break;
             }
-
-        } else if (command[0] == "class") {
-            if (Student.logged_in == false) {
-                Error.notLoggedIn(command[0]);
-                continue;
-            } else {
-                try {
-                    auto index = Student.courses.begin();
-                    std::advance(index, std::stoi(command[1])); //  Get class sectionID from index
-                    if (command[2] == "") { command[2] = "-1"; };
-                    Student.class_info(Student, *index, std::stoi(command[2]));
-                } catch (std::invalid_argument) {
-                    Error.notANumber(command[0]);
-                    continue;
-                }
+        } else if (command[0] == "?") {
+            if (command[1] == "profiles") {
+                newScreen();
+                profileAllHelp();
             }
-
         } else if (command[0] == "q") {
             std::exit(0);
         } else {
