@@ -91,7 +91,7 @@ struct User {
         return Student;
     };
 
-    void class_info(User Student, int sectionID) {
+    void classMenu(User Student, int sectionID) {
         int n = -1;
         int index;
         std::string input;
@@ -131,7 +131,7 @@ struct User {
         }
     }
 
-    void list_classes(User Student, json student_info) {
+    void allClassesMenu(User Student, json student_info) {
         while (true) {
             int i = 0;
             newScreen();
@@ -141,9 +141,11 @@ struct User {
             std::cout << std::endl;
             std::string command[4];
             userInput(Student, command);
+            if (command[0] == "logout") { break; }
             auto index = Student.courses.begin();
             std::advance(index, std::stoi(command[0])); //  Get class sectionID from index
-            Student.class_info(Student, *index);
+            
+            Student.classMenu(Student, *index);
         }
     };
 
@@ -174,17 +176,10 @@ void split(std::string line, std::string array[]) {
     }
 };
 
-
-
-
-
-
 void newScreen() {
     std::system("clear");
     printf("<===== Neptune =====>\n\n");
 }
-
-
 
 void userInput(User Student, std::string command[]) {
     std::string input;
@@ -199,37 +194,34 @@ int main() {
     User Student;
     Exceptions Error;
     std::string input;
-    newScreen();
-    printf("login with `login [profile]`\nFor help on creating profiles, do `? profiles`\n\n");
+    std::string msg = "login with `login [profile]`\nFor help on creating profiles, do `? profiles`\n\n";
 
     while (true) {
         std::string command[4];
+        newScreen();
+        printf("%s", msg.c_str());
         userInput(Student, command);
         json grades_json;
 
         if (command[0] == "login") {
             Student = Student.login(Error, command);
-            Student.list_classes(Student, Student.grades_json);
+            Student.allClassesMenu(Student, Student.grades_json);
+            Student.logged_in = false;
+            Student.first_name = "None";
+            msg = "login with `login [profile]`\nFor help on creating profiles, do `? profiles`\n\n";
 
-        } else if (command[0] == "logout") {
-            if (Student.logged_in == false) {
-                Error.notLoggedIn(command[0]);   
-                continue;
-            } else {
-                Student.logged_in = false;
-                std::cout << "Neptune: Successfully logged out as '" << Student.first_name << "'\n";
-                Student.first_name = "None";
-                break;
-            }
         } else if (command[0] == "?") {
             if (command[1] == "profiles") {
                 newScreen();
                 profileAllHelp();
             }
+        
         } else if (command[0] == "q") {
             std::exit(0);
+        
         } else {
-            std::cout << "Command '" << command[0] << "' not found\n";
+            msg = "Command '" + command[0] + "' not found\n\n";
+        
         }
     }
 };
