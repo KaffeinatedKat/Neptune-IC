@@ -17,10 +17,6 @@ void split(std::string line, std::string array[]);
 void userInput(User Student, std::string command[]);
 
 struct Exceptions {
-    std::string notLoggedIn(std::string command) {
-        return "You must login to use '" + command + "'\n\n";
-    };
-
     std::string userNotFound(std::string user) {
         return "No profile for user '" + user + "'\nTry '? profiles' for more information\n\n";
     };
@@ -82,9 +78,6 @@ struct User {
                 for (auto& it : Student.grades_json[0]["terms"][0]["courses"].items()) { //  Add each course's ID into a list to access each class via an index
                     Student.courses.push_back(it.value()["sectionID"]);
                 }
-
-                Student.first_name = Student.student_json[0]["firstName"];
-                std::cout << "Neptune: Successfully logged in as " << Student.first_name << std::endl;
             }
         } catch (nlohmann::detail::type_error) {
             Student.error = Error.userNotFound(command[1]);
