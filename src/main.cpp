@@ -1,6 +1,7 @@
 #include <iostream>
 #include <cstdlib>
 #include <nlohmann/detail/exceptions.hpp>
+#include <stdexcept>
 #include <string>
 #include <sstream>
 #include <fstream>
@@ -89,6 +90,7 @@ struct User {
         int n = -1;
         int index = -1;
         std::string input;
+        std::string msg = "";
         cpr::Session session;
 
         session.SetUrl(cpr::Url{Student.url + Student.login_path});
@@ -116,30 +118,40 @@ struct User {
                 }
             }
             std::cout << std::endl;
-            
+            printf("%s\n", msg.c_str());
             n = -1;
             std::string command[4];
             userInput(Student, command);
             if (command[0] == "b") { break; };
-            index = std::stoi(command[0]);
+            try {
+                index = std::stoi(command[0]);
+            } catch (std::invalid_argument) {
+                msg = "Input must be a number (or b)";
+            }
         }
     }
 
     void allClassesMenu(User Student, json student_info) {
+        std::string msg = "";
         while (true) {
             int i = 0;
             newScreen();
             for (auto& it : student_info[0]["terms"][0]["courses"].items()) {
                 std::cout << "[" << i++ << "] " << it.value()["courseName"] << std::endl;
             }
-            std::cout << std::endl;
+            printf("\n%s\n", msg.c_str());
             std::string command[4];
             userInput(Student, command);
             if (command[0] == "logout") { break; }
             auto index = Student.courses.begin();
-            std::advance(index, std::stoi(command[0])); //  Get class sectionID from index
-            
+            try {
+                std::advance(index, std::stoi(command[0])); //  Get class sectionID from index
+            } catch (std::invalid_argument) {
+                msg = "Input must be a number";
+                continue;
+            }
             Student.classMenu(Student, *index);
+            msg = "";
         }
     };
 
