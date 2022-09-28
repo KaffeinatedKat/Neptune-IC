@@ -226,8 +226,7 @@ int main() {
 
         } else if (command[0] == "?") {
             if (command[1] == "profiles") {
-                newScreen();
-                profileAllHelp();
+                msg = profileAllHelp();
             }
         
         } else if (command[0] == "q") {
