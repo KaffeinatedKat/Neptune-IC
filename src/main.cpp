@@ -33,12 +33,14 @@ int main() {
                 msg = "You must specify a user\n\n";
                 continue;
             }
-            Student = Student.login(Error, command);
+            Student.profile_name = command[1];
+            Student = Student.login(Student, Error);
             if (Student.logged_in != true) {
                 msg = Student.error;
                 continue;
             }
-            Cli.allClassesMenu(Student, Student.grades_json);
+
+            Cli.allClassesMenu(Student, Error, Student.grades_json);
             Student.logged_in = false;
             Student.first_name = "None";
             msg = "login with `login [profile]`\nFor help on creating profiles, do `? profiles`\n\n";

@@ -10,7 +10,7 @@ using json = nlohmann::json;
 struct UI {
     void newScreen() {
         std::system("clear");
-        printf("<===== Neptune =====>\n\n");
+        printf("<===== Neptune =====>\n");
     }
 
     void split(std::string line, std::string array[]) {
@@ -48,7 +48,7 @@ struct UI {
             newScreen();
 
             //  "ClassName" ["Grade"] (Percentage)
-            std::cout << course_json["details"][0]["task"]["courseName"] << " [" << course_json["details"][0]["task"]["progressScore"] << "] (" << course_json["details"][0]["task"]["progressPercent"] << ")\n";
+            std::cout << "\n" << course_json["details"][0]["task"]["courseName"] << " [" << course_json["details"][0]["task"]["progressScore"] << "] (" << course_json["details"][0]["task"]["progressPercent"] << ")\n";
 
             for (auto& it : course_json["details"][0]["categories"].items()) {
                 n++;
@@ -74,27 +74,34 @@ struct UI {
         }
     }
 
-    void allClassesMenu(User Student, json student_info) {
+    void allClassesMenu(User Student, Exceptions Error, json student_info) {
         std::string msg = "";
         while (true) {
             int i = 0;
             newScreen();
+            printf("[N]: %d\n\n", Student.unreadNotifs);
             for (auto& it : student_info[0]["terms"][0]["courses"].items()) {
                 std::cout << "[" << i++ << "] " << it.value()["courseName"] << std::endl;
             }
             printf("\n%s\n", msg.c_str());
             std::string command[4];
             userInput(Student, command);
-            if (command[0] == "logout") { break; }
-            auto index = Student.courses.begin();
-            try {
-                std::advance(index, std::stoi(command[0])); //  Get class sectionID from index
-            } catch (std::invalid_argument) {
-                msg = "Input must be a number";
+            if (command[0] == "logout") {
+                break;
+            } else if (command[0] == "r") {
+                Student = Student.login(Student, Error);
                 continue;
+            } else {
+                auto index = Student.courses.begin();
+                try {
+                    std::advance(index, std::stoi(command[0])); //  Get class sectionID from index
+                } catch (std::invalid_argument) {
+                    msg = "Input must be a number";
+                    continue;
+                }
+                classMenu(Student, *index);
+                msg = "";
             }
-            classMenu(Student, *index);
-            msg = "";
         }
     };
 
@@ -109,6 +116,10 @@ struct UI {
                 continue;
             }
         }
+    }
+
+    void notifications(User Student, int count) {
+        
     }
 
 };
