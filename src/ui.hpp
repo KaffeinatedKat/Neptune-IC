@@ -135,10 +135,13 @@ struct UI {
         while (true) {
             int c = 0;
             int showCount = 5;
+            std::string stars = "";
             newScreen();
             printf("\n");
             for (auto& it : Student.notifs_json["data"]["NotificationList"]["Notification"].items()) {
-                printf("[%d] %s\n", c++, std::string(it.value()["finalText"]).c_str());
+                stars = "";
+                if (it.value()["read"] == "false") { stars = "*"; };
+                printf("[%d] %s%s%s\n", c++, stars.c_str(), std::string(it.value()["finalText"]).c_str(), stars.c_str());
                 if (c > showCount - 1) { break; };
             }
             std::string command[4];
