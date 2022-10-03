@@ -1,3 +1,4 @@
+#include <cpr/session.h>
 #include <string>
 #include <iostream>
 #include <cpr/cpr.h>
@@ -91,6 +92,8 @@ struct UI {
             } else if (command[0] == "r") {
                 Student = Student.login(Student, Error);
                 continue;
+            } else if (command[0] == "n") {
+                notifications(Student);
             } else {
                 auto index = Student.courses.begin();
                 try {
@@ -118,10 +121,32 @@ struct UI {
         }
     }
 
-    void notifications(User Student, int count) {
-        for (auto& it : Student.notifs_json.items()) {
-            printf("");
-        }       
+    void notifications(User Student) {
+        cpr::Session session;
+        session.SetUrl(cpr::Url{Student.url + Student.login_path});
+        session.SetParameters(Student.parameters);
+        cpr::Response r = session.Post();
+        
+        session.SetUrl(cpr::Url{Student.url + "/campus/prism?x=user.HomePage-loadNewMessagesCount&urlFilter=portal"});
+        session.SetHeader(cpr::Header{{"Accept", "application/json"}});
+        cpr::Response u = session.Get();
+        Student.unreadNotifs = std::stoi(std::string(json::parse(u.text)["data"]["NewMessages"]["totalCount"]));
+
+        while (true) {
+            int c = 0;
+            int showCount = 5;
+            newScreen();
+            printf("\n");
+            for (auto& it : Student.notifs_json["data"]["NotificationList"]["Notification"].items()) {
+                printf("[%d] %s\n", c++, std::string(it.value()["finalText"]).c_str());
+                if (c > showCount - 1) { break; };
+            }
+            std::string command[4];
+            userInput(Student, command);
+            if (command[0] == "b") {
+                break;
+            }
+        }
     }
 
 };
