@@ -119,7 +119,9 @@ struct UI {
     }
 
     void notifications(User Student, int count) {
-        
+        for (auto& it : Student.notifs_json.items()) {
+            printf("");
+        }       
     }
 
 };

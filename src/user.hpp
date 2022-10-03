@@ -1,3 +1,4 @@
+#include <stdexcept>
 #include <string>
 #include <fstream>
 #include <iostream>
@@ -17,8 +18,8 @@ struct User {
     std::string error;
     std::string url;
     std::string login_path;
-    std::list<int> courses;
     int unreadNotifs = 0;
+    std::list<int> courses;
 
     User login(User Student, Exceptions Error) {
         std::ifstream f("../profiles.json");
@@ -52,22 +53,21 @@ struct User {
                 session.SetUrl(cpr::Url{Student.url + "/campus/prism?x=notifications.Notification-retrieve&limitCount=200&urlFilter=portal"});
                 session.SetHeader(cpr::Header{{"Accept", "application/json"}});
                 cpr::Response n = session.Get();
+                session.SetUrl(cpr::Url{Student.url + "/campus/prism?x=notifications.NotificationUser-countUnviewed&urlFilter=portal"});
+                session.SetHeader(cpr::Header{{"Accept", "application/json"}});
+                cpr::Response u = session.Get();
+
 
                 Student.grades_json = json::parse(g.text);
                 Student.student_json = json::parse(s.text);
                 Student.notifs_json = json::parse(n.text);
+                Student.unreadNotifs = std::stoi(std::string(json::parse(u.text)["data"]["RecentNotifications"]["count"]));
                 Student.logged_in = true;
             }
 
             if (Student.logged_in) {
                 for (auto& it : Student.grades_json[0]["terms"][0]["courses"].items()) { //  Add each course's ID into a list to access each class via an index
                     Student.courses.push_back(it.value()["sectionID"]);
-                }
-                for (auto& it : Student.notifs_json["data"]["NotificationList"]["Notification"].items()) {
-                    
-                    if ( it.value()["read"] == "false" ) {
-                        Student.unreadNotifs++;
-                    }
                 }
             }
         } catch (nlohmann::detail::type_error) {
