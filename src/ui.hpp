@@ -1,6 +1,5 @@
 #include <cpr/session.h>
 #include <string>
-#include <iostream>
 #include <cpr/cpr.h>
 #include <nlohmann/json.hpp>
 
@@ -26,13 +25,13 @@ struct UI {
 
     void userInput(User Student, std::string command[]) {
         std::string input;
-        std::cout << "[" << Student.first_name << "] (?): ";
+        printf("[%s] (?): ", Student.first_name.c_str());
         std::getline(std::cin, input);
         split(input, command);
     }
 
     void classMenu(User Student, int sectionID) {
-        int n = -1;
+        int n = 0;
         int index = -1;
         std::string input;
         std::string msg = "";
@@ -47,15 +46,16 @@ struct UI {
 
         while (true) {
             newScreen();
+            n = 0;
 
             //  "ClassName" ["Grade"] (Percentage)
-            std::cout << "\n" << course_json["details"][0]["task"]["courseName"] << " [" << course_json["details"][0]["task"]["progressScore"] << "] (" << course_json["details"][0]["task"]["progressPercent"] << ")\n";
+            printf("\n%s [%s] (%.2f%%)\n", std::string(course_json["details"][0]["task"]["courseName"]).c_str(), std::string(course_json["details"][0]["task"]["progressScore"]).c_str(), float(course_json["details"][0]["task"]["progressPercent"]));
 
-            for (auto& it : course_json["details"][0]["categories"].items()) {
-                n++;
-                std::cout << "\t[" << n << "] " << it.value()["name"] << "  [" << it.value()["progress"]["progressPointsEarned"] << "/" << it.value()["progress"]["progressTotalPoints"] << "] (" << it.value()["progress"]["progressPercent"] << "%)";
             
-                if (index == n) {
+            for (auto& it : course_json["details"][0]["categories"].items()) {
+                printf("\t[%d] %s [%.2f/%.2f] (%.2f%%)", n++, std::string(it.value()["name"]).c_str(), float(it.value()["progress"]["progressPointsEarned"]), float(it.value()["progress"]["progressTotalPoints"]), float(it.value()["progress"]["progressPercent"]));
+
+                if (index == n - 1) {
                     printf(" >>\n");
                     expandCategory(Student, it.value());
                 } else {
@@ -63,7 +63,6 @@ struct UI {
                 }
             }
             printf("\n%s\n", msg.c_str());
-            n = -1;
             std::string command[4];
             userInput(Student, command);
             if (command[0] == "b") { break; };
@@ -82,7 +81,7 @@ struct UI {
             newScreen();
             printf("[N]: %d\n\n", Student.unreadNotifs);
             for (auto& it : student_info[0]["terms"][0]["courses"].items()) {
-                std::cout << "[" << i++ << "] " << it.value()["courseName"] << std::endl;
+                printf("[%d] %s\n", i++, std::string(it.value()["courseName"]).c_str());
             }
             printf("\n%s\n", msg.c_str());
             std::string command[4];
