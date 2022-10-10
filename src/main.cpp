@@ -17,6 +17,7 @@ using json = nlohmann::json;
 int main() {
     User Student;
     Exceptions Error;
+    UserProfiles Profiles;
     UI Cli;
     std::string input;
     std::string msg = "login with `login [profile]`\nFor help on creating profiles, do `? profiles`\n\n";
@@ -25,7 +26,7 @@ int main() {
         std::string command[4];
         Cli.newScreen();
         printf("%s", msg.c_str());
-        Cli.userInput(Student, command);
+        Cli.userInput(command, Student.first_name);
         json grades_json;
 
         if (command[0] == "login") {
@@ -44,6 +45,11 @@ int main() {
             Student.logged_in = false;
             Student.first_name = "None";
             msg = "login with `login [profile]`\nFor help on creating profiles, do `? profiles`\n\n";
+
+        } else if (command[0] == "profiles") {
+            if (command[1] == "create") {
+                Cli.newProfile(Profiles);
+            }
 
         } else if (command[0] == "?") {
             if (command[1] == "profiles") {

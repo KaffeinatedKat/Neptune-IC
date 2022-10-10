@@ -6,10 +6,12 @@
 #include <nlohmann/json.hpp>
 
 #include "exceptions.hpp"
+#include "profile.hpp"
 
 using json = nlohmann::json;
 
 struct User {
+    UserProfiles Profiles;
     json grades_json, student_json, notifs_json;
     bool logged_in = false;
     cpr::Parameters parameters;
@@ -22,25 +24,24 @@ struct User {
     std::list<int> courses;
 
     User login(User Student, Exceptions Error) {
-        std::ifstream f("../profiles.json");
-        json profiles = json::parse(f);
+        Profiles = Profiles.load(Profiles);
         json student_json, grades_json, notifs_json;
                         
 
         try {
-            std::string login_method = profiles["user"][Student.profile_name]["login_method"].get<std::string>();
+            std::string login_method = Profiles.profile_json["user"][Student.profile_name]["login_method"].get<std::string>();
 
             if (login_method == "json_file") {
-                std::ifstream g("../" + profiles["user"][Student.profile_name]["grades_json"].get<std::string>());
-                std::ifstream s("../" + profiles["user"][Student.profile_name]["student_json"].get<std::string>());
+                std::ifstream g("../" + Profiles.profile_json["user"][Student.profile_name]["grades_json"].get<std::string>());
+                std::ifstream s("../" + Profiles.profile_json["user"][Student.profile_name]["student_json"].get<std::string>());
                 Student.grades_json = json::parse(g);
                 Student.student_json = json::parse(s);
                 Student.logged_in = true;
             } else if (login_method == "microsoft") {
                 cpr::Session session;
-                std::string saml = profiles["user"][Student.profile_name]["saml"].get<std::string>(); //  SAMLResponse
-                Student.login_path = profiles["user"][Student.profile_name]["login_path"].get<std::string>(); //  SAMLResponse POST path
-                Student.url = profiles["user"][Student.profile_name]["campus_url"].get<std::string>(); //  Infinite Campus URL
+                std::string saml = Profiles.profile_json["user"][Student.profile_name]["saml"].get<std::string>(); //  SAMLResponse
+                Student.login_path = Profiles.profile_json["user"][Student.profile_name]["login_path"].get<std::string>(); //  SAMLResponse POST path
+                Student.url = Profiles.profile_json["user"][Student.profile_name]["campus_url"].get<std::string>(); //  Infinite Campus URL
                 Student.parameters = cpr::Parameters{{"SAMLResponse", saml}};
                 
                 session.SetUrl(cpr::Url{Student.url + Student.login_path});
@@ -72,6 +73,7 @@ struct User {
             }
         } catch (nlohmann::detail::type_error) {
             Student.error = Error.userNotFound(Student.profile_name);
+            Student.logged_in = false;
         }
         return Student;
     };

@@ -1,4 +1,5 @@
 #include <cpr/session.h>
+#include <cstdio>
 #include <string>
 #include <cpr/cpr.h>
 #include <nlohmann/json.hpp>
@@ -23,9 +24,9 @@ struct UI {
         }
     }
 
-    void userInput(User Student, std::string command[]) {
+    void userInput(std::string command[], std::string text) {
         std::string input;
-        printf("[%s] (?): ", Student.first_name.c_str());
+        printf("[%s] (?): ", text.c_str());
         std::getline(std::cin, input);
         split(input, command);
     }
@@ -64,7 +65,7 @@ struct UI {
             }
             printf("\n%s\n", msg.c_str());
             std::string command[4];
-            userInput(Student, command);
+            userInput(command, Student.first_name);
             if (command[0] == "b") { break; };
             try {
                 index = std::stoi(command[0]);
@@ -85,7 +86,7 @@ struct UI {
             }
             printf("\n%s\n", msg.c_str());
             std::string command[4];
-            userInput(Student, command);
+            userInput(command, Student.first_name);
             if (command[0] == "logout") {
                 break;
             } else if (command[0] == "r") {
@@ -144,11 +145,67 @@ struct UI {
                 if (c > showCount - 1) { break; };
             }
             std::string command[4];
-            userInput(Student, command);
+            userInput(command, Student.first_name);
             if (command[0] == "b") {
                 break;
             }
         }
     }
 
+    void newProfile(UserProfiles Profiles) {
+        int stage = 1;
+        std::string command[2];
+        std::string name;
+        std::string msg;
+        Profiles = Profiles.load(Profiles);
+        
+        newScreen();
+        printf("\n");
+
+        while (true) {
+            switch (stage) {
+                case 1:
+                    userInput(command, "Name of profile");
+                    name = command[0];
+                    stage = 2;
+                    continue;
+                case 2:
+                    printf("%s", msg.c_str());
+                    userInput(command, "Login method");
+                    if (command[0] == "microsoft") { stage = 3; }
+                    else if (command[0] == "json") { stage = 4; }
+                    else if (command[0] == "?") { 
+                        msg = "Login Methods: 'microsoft', 'json'\n";
+                        stage = 2;
+                    }
+                    else { 
+                        stage = 2; 
+                        msg = "Invalid login method\n";
+                        newScreen();
+                        printf("\n[Name of profile] (?): %s\n", name.c_str());
+                    }
+                    continue;
+                case 3:
+                    Profiles.profile_json["user"][name]["login_method"] = command[0];
+                    userInput(command, "IC URL");
+                    Profiles.profile_json["user"][name]["campus_url"] = command[0];
+                    userInput(command, "IC Login URL Path");
+                    Profiles.profile_json["user"][name]["login_path"] = command[0];
+                    userInput(command, "SAMLResponce");
+                    Profiles.profile_json["user"][name]["saml"] = command[0];
+                    printf("\nProfile successfuly created!\n");
+                    userInput(command, "Press enter to return");
+                    stage = 0;
+                    continue;
+                case 4:
+                    Profiles.profile_json["user"][name]["login_method"] = command[0];
+                    printf("jaysong");
+                    break;
+                default:
+                    Profiles = Profiles.write(Profiles);
+                    break;
+            }
+            break;
+        }
+    }
 };
