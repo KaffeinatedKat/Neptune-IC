@@ -5,6 +5,7 @@
 #include <nlohmann/json.hpp>
 
 #include "user.hpp"
+#include "help_text.cpp"
 
 using json = nlohmann::json;
 
@@ -31,6 +32,13 @@ struct UI {
         split(input, command);
     }
 
+    std::string gradeColor(std::string grade) {
+        if (grade == "A" || grade == "B") { return "\033[32m(" + grade; }
+        else if (grade == "C") { return "\033[33m(" + grade; }
+        else if (grade == "F") { return "\033[31m(" + grade; }
+        else { return "(" + grade; }
+    }
+
     void classMenu(User Student, int sectionID) {
         int n = 0;
         int index = -1;
@@ -54,15 +62,21 @@ struct UI {
 
             
             for (auto& it : course_json["details"][0]["categories"].items()) {
-                printf("\t[%d] %s [%.2f/%.2f] (%.2f%%)", n++, std::string(it.value()["name"]).c_str(), float(it.value()["progress"]["progressPointsEarned"]), float(it.value()["progress"]["progressTotalPoints"]), float(it.value()["progress"]["progressPercent"]));
+                try {
+                    printf("\t[%d] %s [%.2f/%.2f] (%.2f%%)", n++, std::string(it.value()["name"]).c_str(), float(it.value()["progress"]["progressPointsEarned"]), float(it.value()["progress"]["progressTotalPoints"]), float(it.value()["progress"]["progressPercent"]));
+                    
+                    if (index == n - 1) {
+                        printf(" >>\n");
+                        expandCategory(Student, it.value());
+                    } else {
+                        printf("\n");
+                    }
 
-                if (index == n - 1) {
-                    printf(" >>\n");
-                    expandCategory(Student, it.value());
-                } else {
-                    printf("\n");
+                } catch (nlohmann::detail::type_error) {
+                    ;
                 }
-            }
+
+                            }
             printf("\n%s\n", msg.c_str());
             std::string command[4];
             userInput(command, Student.first_name);
@@ -82,7 +96,7 @@ struct UI {
             newScreen();
             printf("[N]: %d\n\n", Student.unreadNotifs);
             for (auto& it : student_info[0]["terms"][0]["courses"].items()) {
-                printf("[%d] %s\n", i++, std::string(it.value()["courseName"]).c_str());
+                printf("[%d] %s) %s\033[0m\n", i++, gradeColor(it.value()["gradingTasks"][0]["progressScore"]).c_str(), std::string(it.value()["courseName"]).c_str());
             }
             printf("\n%s\n", msg.c_str());
             std::string command[4];
@@ -160,16 +174,17 @@ struct UI {
         Profiles = Profiles.load(Profiles);
         
         newScreen();
-        printf("\n");
 
         while (true) {
             switch (stage) {
-                case 1:
+                case 1: {
+                    printf("\n");
                     userInput(command, "Name of profile");
                     name = command[0];
                     stage = 2;
                     continue;
-                case 2:
+                }
+                case 2: {
                     printf("%s", msg.c_str());
                     userInput(command, "Login method");
                     if (command[0] == "microsoft") { stage = 3; }
@@ -177,6 +192,8 @@ struct UI {
                     else if (command[0] == "?") { 
                         msg = "Login Methods: 'microsoft', 'json'\n";
                         stage = 2;
+                    } else if (command[0] == "q") {
+                        break;
                     }
                     else { 
                         stage = 2; 
@@ -185,25 +202,46 @@ struct UI {
                         printf("\n[Name of profile] (?): %s\n", name.c_str());
                     }
                     continue;
-                case 3:
-                    Profiles.profile_json["user"][name]["login_method"] = command[0];
-                    userInput(command, "IC URL");
-                    Profiles.profile_json["user"][name]["campus_url"] = command[0];
-                    userInput(command, "IC Login URL Path");
-                    Profiles.profile_json["user"][name]["login_path"] = command[0];
-                    userInput(command, "SAMLResponce");
-                    Profiles.profile_json["user"][name]["saml"] = command[0];
-                    printf("\nProfile successfuly created!\n");
-                    userInput(command, "Press enter to return");
-                    stage = 0;
-                    continue;
-                case 4:
+                }
+                case 3: {
+                    std::string json_entries[4] = {"campus_url", "login_path", "saml"};
+                    std::string prompts[4] = {"IC URL", "IC Login URL Path", "SAMLResponce"};
+                    bool success = false;
+                        
+                    for (int c = 0; c < 3; c++) {
+                        userInput(command, prompts[c]);
+                        if (command[0] == "?") {
+                            newScreen();
+                            printf("%s", microsoftProfileHelp().c_str());
+                            userInput(command, "");
+                            success = false;
+                            break;
+                        } else {
+                            Profiles.profile_json["user"][name][json_entries[c]] = command[0];
+                            success = true;
+                        }
+                    }
+                    
+                    if (success) {
+                        printf("\nProfile successfuly created!\n");
+                        userInput(command, "Press enter to return");
+                        stage = 0;
+                        continue;
+                    } else {
+                        newScreen();
+                        stage = 1;
+                        continue;
+                    }
+                }
+                case 4: {
                     Profiles.profile_json["user"][name]["login_method"] = command[0];
                     printf("jaysong");
                     break;
-                default:
+                }
+                default: {
                     Profiles = Profiles.write(Profiles);
                     break;
+                }
             }
             break;
         }
