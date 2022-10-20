@@ -3,10 +3,10 @@
     "colored-text": {
       "enabled": true,
       "grade-colors": {
-        "A": "31",
-        "B": "31",
+        "A": "32",
+        "B": "32",
         "C": "33",
-        "F": "33"
+        "F": "31"
       }
     }
   }
