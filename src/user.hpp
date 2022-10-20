@@ -1,3 +1,6 @@
+#include <cpr/redirect.h>
+#include <cpr/response.h>
+#include <cpr/session.h>
 #include <stdexcept>
 #include <string>
 #include <fstream>
@@ -19,7 +22,11 @@ struct User {
     std::string profile_name;
     std::string error;
     std::string url;
+    std::string ms_url;
     std::string login_path;
+    std::string login_method;
+    std::string email;
+    std::string password;
     int unreadNotifs = 0;
     std::list<int> courses;
 
@@ -29,15 +36,15 @@ struct User {
                         
 
         try {
-            std::string login_method = Profiles.profile_json["user"][Student.profile_name]["login_method"].get<std::string>();
+            Student.login_method = Profiles.profile_json["user"][Student.profile_name]["login_method"].get<std::string>();
 
-            if (login_method == "json_file") {
-                std::ifstream g("../" + Profiles.profile_json["user"][Student.profile_name]["grades_json"].get<std::string>());
-                std::ifstream s("../" + Profiles.profile_json["user"][Student.profile_name]["student_json"].get<std::string>());
+            if (Student.login_method == "json_file") {
+                std::ifstream g("../userJson/" + Student.profile_name + "_" + Profiles.profile_json["user"][Student.profile_name]["grades_json"].get<std::string>());
+                std::ifstream s("../userJson/" + Student.profile_name + "_" +Profiles.profile_json["user"][Student.profile_name]["student_json"].get<std::string>());
                 Student.grades_json = json::parse(g);
                 Student.student_json = json::parse(s);
                 Student.logged_in = true;
-            } else if (login_method == "microsoft") {
+            } else if (Student.login_method == "microsoft") {
                 cpr::Session session;
                 std::string saml = Profiles.profile_json["user"][Student.profile_name]["saml"].get<std::string>(); //  SAMLResponse
                 Student.login_path = Profiles.profile_json["user"][Student.profile_name]["login_path"].get<std::string>(); //  SAMLResponse POST path

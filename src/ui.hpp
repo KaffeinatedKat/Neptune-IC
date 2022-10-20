@@ -1,6 +1,7 @@
 #include <cpr/session.h>
 #include <cstdio>
 #include <string>
+#include <sstream>
 #include <cpr/cpr.h>
 #include <nlohmann/json.hpp>
 
@@ -42,16 +43,26 @@ struct UI {
     void classMenu(User Student, int sectionID) {
         int n = 0;
         int index = -1;
+        std::string section;
         std::string input;
         std::string msg = "";
         cpr::Session session;
+        json course_json;
 
-        session.SetUrl(cpr::Url{Student.url + Student.login_path});
-        session.SetParameters(Student.parameters);
-        cpr::Response r = session.Post();
-        session.SetUrl(cpr::Url{Student.url + "/campus/resources/portal/grades/detail/" + std::to_string(sectionID)});
-        cpr::Response c = session.Get();
-        json course_json = json::parse(c.text);
+        std::stringstream temp;
+        temp << sectionID; //  to_string sucks, and gives me a float with a ton of zero's on the end, and my int is case sensitive so I have to do stringstream to convert my int to a string >:(
+
+        if (Student.login_method == "json_file") {
+            std::ifstream g("../userJson/" + Student.profile_name + "_" + temp.str() + ".json");
+            course_json = json::parse(g);
+        } else if (Student.login_method == "microsoft") {
+            session.SetUrl(cpr::Url{Student.url + Student.login_path});
+            session.SetParameters(Student.parameters);
+            cpr::Response r = session.Post();
+            session.SetUrl(cpr::Url{Student.url + "/campus/resources/portal/grades/detail/" + std::to_string(sectionID)});
+            cpr::Response c = session.Get();
+            course_json = json::parse(c.text);
+        }
 
         while (true) {
             newScreen();
@@ -71,7 +82,6 @@ struct UI {
                     } else {
                         printf("\n");
                     }
-
                 } catch (nlohmann::detail::type_error) {
                     ;
                 }
