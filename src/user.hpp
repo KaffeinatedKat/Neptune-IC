@@ -77,6 +77,7 @@ struct User {
                 for (auto& it : Student.grades_json[0]["terms"][0]["courses"].items()) { //  Add each course's ID into a list to access each class via an index
                     Student.courses.push_back(it.value()["sectionID"]);
                 }
+                Student.first_name = Student.student_json[0]["firstName"];
             }
         } catch (nlohmann::detail::type_error) {
             Student.error = Error.userNotFound(Student.profile_name);
