@@ -50,7 +50,7 @@ struct UI {
         json course_json;
 
         std::stringstream temp;
-        temp << sectionID; //  to_string sucks, and gives me a float with a ton of zero's on the end, and my int is case sensitive so I have to do stringstream to convert my int to a string >:(
+        temp << sectionID; //  to_string is a royal shithead, and stringstream is my solution, not the best solution but hey it works doesnt it
 
         if (Student.login_method == "json_file") {
             std::ifstream g("../userJson/" + Student.profile_name + "_" + temp.str() + ".json");
