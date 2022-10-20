@@ -1,0 +1,29 @@
+[
+   {
+   "enrollmentID":23324,
+   "terms": [
+      {
+        "courses": [
+          {
+            "courseName": "Maths",
+            "sectionID": 123,
+            "gradingTasks": [
+              {
+              "progressScore": "B"
+              }
+            ]
+         },
+          {
+            "courseName": "Science",
+            "sectionID": 124,
+            "gradingTasks": [
+              {
+              "progressScore": "F"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]

@@ -1,0 +1,51 @@
+{
+  "details": [
+    {
+      "task": {
+        "courseName": "Maths",
+        "progressScore": "F",
+        "progressPercent": 50.0
+      },
+      "categories": [
+        {
+          "name": "Homework",
+          "assignments": [
+            {
+              "assignmentName": "Adding big numbers",
+              "missing": false
+            },
+            {
+              "assignmentName": "factoring",
+              "missing": true
+            }
+          ],
+          "progress": {
+              "progressScore": "F",
+              "progressPointsEarned": 50.0,
+              "progressTotalPoints": 100.0,
+              "progressPercent" : 50.0
+            }
+        },
+        {
+          "name": "Homework",
+          "assignments": [
+            {
+              "assignmentName": "Adding big numbers",
+              "missing": false
+            },
+            {
+              "assignmentName": "factoring",
+              "missing": true
+            }
+          ],
+          "progress": {
+              "progressScore": "F",
+              "progressPointsEarned": 50.0,
+              "progressTotalPoints": 100.0,
+              "progressPercent" : 50.0
+            }
+        }
+      ]
+    }
+  ]
+}

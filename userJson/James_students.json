@@ -1,0 +1,11 @@
+[
+   {
+      "firstName":"James",
+      "lastName":"Carrot",
+      "enrollments":[
+         {
+            "schoolName":"City Name High School"
+         }
+      ]
+   }
+]
