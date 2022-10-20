@@ -1,0 +1,13 @@
+[
+  {
+    "colored-text": {
+      "enabled": true,
+      "grade-colors": {
+        "A": "31",
+        "B": "31",
+        "C": "33",
+        "F": "33"
+      }
+    }
+  }
+]

@@ -5,6 +5,7 @@
 #include <cpr/cpr.h>
 #include <nlohmann/json.hpp>
 
+#include "settings.hpp"
 #include "user.hpp"
 #include "help_text.cpp"
 
@@ -34,10 +35,19 @@ struct UI {
     }
 
     std::string gradeColor(std::string grade) {
-        if (grade == "A" || grade == "B") { return "\033[32m(" + grade; }
-        else if (grade == "C") { return "\033[33m(" + grade; }
-        else if (grade == "F") { return "\033[31m(" + grade; }
-        else { return "(" + grade; }
+        Options Settings;
+        Settings = Settings.load(Settings);
+
+        json colors = Settings.json[0]["colored-text"];
+
+        if (colors["enabled"] != true) { return "(" + grade; }
+
+        for (auto& it : colors["grade-colors"].items()) {
+            if (grade == it.key()) { return "\033[" + std::string(it.value()) + "m(" + grade; }
+        }
+
+        return "(" + grade;
+
     }
 
     void classMenu(User Student, int sectionID) {
