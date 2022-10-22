@@ -38,7 +38,7 @@ struct User {
         try {
             Student.login_method = Profiles.profile_json["user"][Student.profile_name]["login_method"].get<std::string>();
 
-            if (Student.login_method == "json_file") {
+            if (Student.login_method == "json") {
                 std::ifstream g("../userJson/" + Student.profile_name + "_" + Profiles.profile_json["user"][Student.profile_name]["grades_json"].get<std::string>());
                 std::ifstream s("../userJson/" + Student.profile_name + "_" +Profiles.profile_json["user"][Student.profile_name]["student_json"].get<std::string>());
                 Student.grades_json = json::parse(g);
