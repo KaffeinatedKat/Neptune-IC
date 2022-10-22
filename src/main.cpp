@@ -49,6 +49,8 @@ int main() {
         } else if (command[0] == "profiles") {
             if (command[1] == "create") {
                 Cli.newProfile(Profiles);
+            } else if (command[1] == "list") {
+                msg = Cli.listProfiles(Profiles, msg);
             }
 
         } else if (command[0] == "?") {

@@ -266,4 +266,16 @@ struct UI {
             break;
         }
     }
+
+    std::string listProfiles(UserProfiles Profiles, std::string message) {
+        Profiles = Profiles.load(Profiles);
+        message = "All profiles:\n\n";
+
+        for (auto& it : Profiles.profile_json["user"].items()) {
+            message.append(it.key() + " [" + std::string(it.value()["login_method"]) + "]\n");
+        }
+        message.append("\n");
+
+        return message;
+    };
 };
