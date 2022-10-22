@@ -227,6 +227,7 @@ struct UI {
                     std::string json_entries[4] = {"campus_url", "login_path", "saml"};
                     std::string prompts[4] = {"IC URL", "IC Login URL Path", "SAMLResponce"};
                     bool success = false;
+                    Profiles.profile_json["user"][name]["login_method"] = "microsoft";
                         
                     for (int c = 0; c < 3; c++) {
                         userInput(command, prompts[c]);
