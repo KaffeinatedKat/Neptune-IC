@@ -30,6 +30,9 @@ struct User {
     int unreadNotifs = 0;
     std::list<int> courses;
 
+    
+
+
     User login(User Student, Exceptions Error) {
         Profiles.load(Profiles);
         json student_json, grades_json, notifs_json;
@@ -39,8 +42,8 @@ struct User {
             Student.login_method = Profiles.profile_json["user"][Student.profile_name]["login_method"].get<std::string>();
 
             if (Student.login_method == "json") {
-                std::ifstream g("../userJson/" + Student.profile_name + "_" + Profiles.profile_json["user"][Student.profile_name]["grades_json"].get<std::string>());
-                std::ifstream s("../userJson/" + Student.profile_name + "_" +Profiles.profile_json["user"][Student.profile_name]["student_json"].get<std::string>());
+                std::ifstream g("../userJson/" + Student.profile_name + "_grades.json");
+                std::ifstream s("../userJson/" + Student.profile_name + "_students.json");
                 Student.grades_json = json::parse(g);
                 Student.student_json = json::parse(s);
                 Student.logged_in = true;
@@ -81,6 +84,9 @@ struct User {
             }
         } catch (nlohmann::detail::type_error) {
             Student.error = Error.userNotFound(Student.profile_name);
+            Student.logged_in = false;
+        } catch (nlohmann::detail::parse_error) {
+            Student.error = Error.noJson(Student.profile_name);
             Student.logged_in = false;
         }
         return Student;
