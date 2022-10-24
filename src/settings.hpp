@@ -5,11 +5,11 @@
 using json = nlohmann::json;
 
 struct Options {
-    json json;
+    json settings_json;
 
     Options load(Options Settings) {
         std::ifstream f("../settings.json");
-        Settings.json = json::parse(f);
+        Settings.settings_json = json::parse(f);
         return Settings;
     }
 };

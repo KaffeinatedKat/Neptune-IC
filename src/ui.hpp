@@ -38,7 +38,7 @@ struct UI {
         Options Settings;
         Settings = Settings.load(Settings);
 
-        json colors = Settings.json[0]["colored-text"];
+        json colors = Settings.settings_json[0]["colored-text"];
 
         if (colors["enabled"] != true) { return "(" + grade; }
 
