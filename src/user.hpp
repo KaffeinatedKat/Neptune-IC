@@ -31,7 +31,7 @@ struct User {
     std::list<int> courses;
 
     User login(User Student, Exceptions Error) {
-        Profiles = Profiles.load(Profiles);
+        Profiles.load(Profiles);
         json student_json, grades_json, notifs_json;
                         
 

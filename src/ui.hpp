@@ -191,7 +191,7 @@ struct UI {
         std::string command[2];
         std::string name;
         std::string msg;
-        Profiles = Profiles.load(Profiles);
+        Profiles.load(Profiles);
         
         newScreen();
 
@@ -260,7 +260,7 @@ struct UI {
                     break;
                 }
                 default: {
-                    Profiles = Profiles.write(Profiles);
+                    Profiles.write(Profiles);
                     break;
                 }
             }
@@ -269,7 +269,7 @@ struct UI {
     }
 
     std::string listProfiles(UserProfiles Profiles, std::string message) {
-        Profiles = Profiles.load(Profiles);
+        Profiles.load(Profiles);
         message = "All profiles:\n\n";
 
         for (auto& it : Profiles.profile_json["user"].items()) {
