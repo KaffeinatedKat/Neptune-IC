@@ -12,9 +12,9 @@
 using json = nlohmann::json;
 
 struct UI {
-    void newScreen() {
+    void newScreen(std::string text) {
         std::system("clear");
-        printf("<===== Neptune =====>\n");
+        printf("<===== %s =====>\n", text.c_str());
     }
 
     void split(std::string line, std::string array[]) {
@@ -75,7 +75,7 @@ struct UI {
         }
 
         while (true) {
-            newScreen();
+            newScreen("Class Overview");
             n = 0;
 
             //  "ClassName" ["Grade"] (Percentage)
@@ -113,7 +113,7 @@ struct UI {
         std::string msg = "";
         while (true) {
             int i = 0;
-            newScreen();
+            newScreen("Student Overview");
             printf("[N]: %d\n\n", Student.unreadNotifs);
             for (auto& it : student_info[0]["terms"][0]["courses"].items()) {
                 printf("[%d] %s) %s\033[0m\n", i++, gradeColor(it.value()["gradingTasks"][0]["progressScore"]).c_str(), std::string(it.value()["courseName"]).c_str());
@@ -170,7 +170,7 @@ struct UI {
             int c = 0;
             int showCount = 5;
             std::string stars = "";
-            newScreen();
+            newScreen("Notifications");
             printf("\n");
             for (auto& it : Student.notifs_json["data"]["NotificationList"]["Notification"].items()) {
                 stars = "";
@@ -193,13 +193,14 @@ struct UI {
         std::string msg;
         Profiles.load(Profiles);
         
-        newScreen();
+        newScreen("Profile Creation");
 
         while (true) {
             switch (stage) {
                 case 1: {
                     printf("\n");
                     userInput(command, "Name of profile");
+                    if (command[0] == "q") { break; } 
                     name = command[0];
                     stage = 2;
                     continue;
@@ -218,7 +219,7 @@ struct UI {
                     else { 
                         stage = 2; 
                         msg = "Invalid login method\n";
-                        newScreen();
+                        newScreen("Profile Creation");
                         printf("\n[Name of profile] (?): %s\n", name.c_str());
                     }
                     continue;
@@ -232,7 +233,7 @@ struct UI {
                     for (int c = 0; c < 3; c++) {
                         userInput(command, prompts[c]);
                         if (command[0] == "?") {
-                            newScreen();
+                            newScreen("Profile Creation");
                             printf("%s", microsoftProfileHelp().c_str());
                             userInput(command, "");
                             success = false;
@@ -249,7 +250,7 @@ struct UI {
                         stage = 0;
                         continue;
                     } else {
-                        newScreen();
+                        newScreen("Profile Creation");
                         stage = 1;
                         continue;
                     }

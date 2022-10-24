@@ -24,7 +24,7 @@ int main() {
 
     while (true) {
         std::string command[4];
-        Cli.newScreen();
+        Cli.newScreen("Neptune");
         printf("%s", msg.c_str());
         Cli.userInput(command, Student.first_name);
         json grades_json;
