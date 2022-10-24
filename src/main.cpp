@@ -51,6 +51,9 @@ int main() {
                 Cli.newProfile(Profiles);
             } else if (command[1] == "list") {
                 msg = Cli.listProfiles(Profiles, msg);
+            } else if (command[1] == "delete") {
+                Profiles.remove(Profiles, command[2]);
+                msg = "Profile successfully deleted\n\n";
             }
 
         } else if (command[0] == "?") {
