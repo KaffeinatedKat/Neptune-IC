@@ -17,7 +17,7 @@ struct UI {
         printf("<===== %s =====>\n", text.c_str());
     }
 
-    void split(std::string line, std::string array[]) {
+    void split(std::string line, std::string array[]) { //  Stolen code to split a string into an aray
     int i = 0;
     std::stringstream ssin(line);
 
@@ -34,7 +34,7 @@ struct UI {
         split(input, command);
     }
 
-    std::string gradeColor(std::string grade) {
+    std::string gradeColor(std::string grade) {  // TODO: this can only be used to set colors in one place because of how it returns, fix that shit
         Options Settings;
         Settings = Settings.load(Settings);
 
@@ -66,10 +66,10 @@ struct UI {
             std::ifstream g("../userJson/" + Student.profile_name + "_" + temp.str() + ".json");
             course_json = json::parse(g);
         } else if (Student.login_method == "microsoft") {
-            session.SetUrl(cpr::Url{Student.url + Student.login_path});
+            session.SetUrl(cpr::Url{Student.url + Student.login_path}); //  Login to IC
             session.SetParameters(Student.parameters);
             cpr::Response r = session.Post();
-            session.SetUrl(cpr::Url{Student.url + "/campus/resources/portal/grades/detail/" + std::to_string(sectionID)});
+            session.SetUrl(cpr::Url{Student.url + "/campus/resources/portal/grades/detail/" + std::to_string(sectionID)}); //  Request class json via section_id
             cpr::Response c = session.Get();
             course_json = json::parse(c.text);
         }
@@ -79,20 +79,22 @@ struct UI {
             n = 0;
 
             //  "ClassName" ["Grade"] (Percentage)
+            //  TODO: add colors here
             printf("\n%s [%s] (%.2f%%)\n", std::string(course_json["details"][0]["task"]["courseName"]).c_str(), std::string(course_json["details"][0]["task"]["progressScore"]).c_str(), float(course_json["details"][0]["task"]["progressPercent"]));
 
-            
+            //  Print each grade category
             for (auto& it : course_json["details"][0]["categories"].items()) {
                 try {
+                    //   "Category Name" [earned/total points] (Percentage)
                     printf("\t[%d] %s [%.2f/%.2f] (%.2f%%)", n++, std::string(it.value()["name"]).c_str(), float(it.value()["progress"]["progressPointsEarned"]), float(it.value()["progress"]["progressTotalPoints"]), float(it.value()["progress"]["progressPercent"]));
                     
-                    if (index == n - 1) {
+                    if (index == n - 1) { //  If user input index == category index
                         printf(" >>\n");
-                        expandCategory(Student, it.value());
+                        expandCategory(Student, it.value()); //  Expand the category and print all its assignments
                     } else {
                         printf("\n");
                     }
-                } catch (nlohmann::detail::type_error) {
+                } catch (nlohmann::detail::type_error) { //  Jank lmao, if there's a type error do nothing. Empty categories cause issues otherwise
                     ;
                 }
 
@@ -114,29 +116,33 @@ struct UI {
         while (true) {
             int i = 0;
             newScreen("Student Overview");
-            printf("[N]: %d\n\n", Student.unreadNotifs);
-            for (auto& it : student_info[0]["terms"][0]["courses"].items()) {
+            printf("[N]: %d\n\n", Student.unreadNotifs); //  Print unread notification count
+
+            for (auto& it : student_info[0]["terms"][0]["courses"].items()) { //  Print each class
+                //  (Grade) "Class Name"
                 printf("[%d] %s) %s\033[0m\n", i++, gradeColor(it.value()["gradingTasks"][0]["progressScore"]).c_str(), std::string(it.value()["courseName"]).c_str());
             }
+
             printf("\n%s\n", msg.c_str());
             std::string command[4];
             userInput(command, Student.first_name);
+
             if (command[0] == "logout") {
                 break;
-            } else if (command[0] == "r") {
+            } else if (command[0] == "r") { //  'Reload', logs back into IC and fetches new information
                 Student = Student.login(Student, Error);
                 continue;
-            } else if (command[0] == "n") {
+            } else if (command[0] == "n") { //  Notification menu
                 notifications(Student);
             } else {
-                auto index = Student.courses.begin();
+                auto index = Student.courses.begin(); //  'Random access' for the class vector
                 try {
                     std::advance(index, std::stoi(command[0])); //  Get class sectionID from index
                 } catch (std::invalid_argument) {
                     msg = "Input must be a number";
                     continue;
                 }
-                classMenu(Student, *index);
+                classMenu(Student, *index); //  Expand class from sectionID index
                 msg = "";
             }
         }
@@ -147,9 +153,10 @@ struct UI {
         for (auto& it : course_json["assignments"].items()) {
             missing = "    ";
             try {
-                if (it.value()["missing"]) { missing = "\033[1;31m[M] \033[0m"; }
+                if (it.value()["missing"]) { missing = "\033[1;31m[M] \033[0m"; } //  Oooh fancy colors
+                //  "Assignment Name" [earned/total points]
                 printf("\t\t%s%s %3s%.2f/%.2f]\n", missing.c_str(), std::string(it.value()["assignmentName"]).c_str(), std::string("[").c_str(), std::stof(it.value()["scorePoints"].get<std::string>()), it.value()["totalPoints"].get<double>());
-            } catch (nlohmann::detail::type_error) {
+            } catch (nlohmann::detail::type_error) { //  Again with the jank, ungraded assignments also cause issues
                 continue;
             }
         }
@@ -157,18 +164,21 @@ struct UI {
 
     void notifications(User Student) {
         cpr::Session session;
-        session.SetUrl(cpr::Url{Student.url + Student.login_path});
+        session.SetUrl(cpr::Url{Student.url + Student.login_path}); //  Login to IC to fetch notification data
         session.SetParameters(Student.parameters);
         cpr::Response r = session.Post();
         
-        session.SetUrl(cpr::Url{Student.url + "/campus/prism?x=user.HomePage-loadNewMessagesCount&urlFilter=portal"});
+        session.SetUrl(cpr::Url{Student.url + "/campus/prism?x=user.HomePage-loadNewMessagesCount&urlFilter=portal"}); //  Load notifications
         session.SetHeader(cpr::Header{{"Accept", "application/json"}});
         cpr::Response u = session.Get();
-        Student.unreadNotifs = std::stoi(std::string(json::parse(u.text)["data"]["NewMessages"]["totalCount"]));
+        Student.unreadNotifs = std::stoi(std::string(json::parse(u.text)["data"]["NewMessages"]["totalCount"]));  //  Total unread notifications 
+
+        session.SetUrl(cpr::Url{Student.url + "/campus/prism?x=notifications.NotificationUser-updateLastViewed&urlFilter=portal"}); //  Update read notifications (in theroy)
+        cpr::Response r = session.Get();
 
         while (true) {
             int c = 0;
-            int showCount = 5;
+            int showCount = 5; //  How many notifications to load
             std::string stars = "";
             newScreen("Notifications");
             printf("\n");
@@ -192,7 +202,7 @@ struct UI {
         std::string msg;
         Profiles.load(Profiles);
 
-        for (auto& it : Profiles.profile_json["user"].items()) {
+        for (auto& it : Profiles.profile_json["user"].items()) { //  Warn user if profile to be created already exists
             if (name == it.key()) {
                 printf("Profile '%s' already exists, are you sure you want to override it?\n[y/n] ", name.c_str());
                 getline(std::cin, *command);
@@ -237,24 +247,24 @@ struct UI {
                     bool success = false;
                     Profiles.profile_json["user"][name]["login_method"] = "microsoft";
                         
-                    for (int c = 0; c < 3; c++) {
+                    for (int c = 0; c < 3; c++) { //  Loop through items to be set, and set each one
                         userInput(command, prompts[c]);
-                        if (command[0] == "?") {
+                        if (command[0] == "?") { //  If "?" is entered at any point, help will be shown
                             newScreen("MS Profile Creation Help");
                             printf("%s\n[Return to exit]", microsoftProfileHelp().c_str());
                             getline(std::cin, *command);
                             success = false;
                             break;
                         } else {
-                            Profiles.profile_json["user"][name][json_entries[c]] = command[0];
+                            Profiles.profile_json["user"][name][json_entries[c]] = command[0];  //  Set item and move to the next
                             success = true;
                         }
                     }
                     
-                    if (success) {
+                    if (success) { //  If all items are successfully set, write to profiles.json and return
                         Profiles.write(Profiles);
                         return "Profile '" + name + "' was successfully created!\n";
-                    } else {
+                    } else { //  If not, return to variable set loop till all items successfully set
                         newScreen("Profile Creation");
                         printf("\n[Profile Name] (?): %s\n[Login Method] (?): microsoft\n", name.c_str());
                         stage = 3;
