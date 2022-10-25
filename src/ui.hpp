@@ -191,6 +191,17 @@ struct UI {
         std::string command[2];
         std::string msg;
         Profiles.load(Profiles);
+
+        for (auto& it : Profiles.profile_json["user"].items()) {
+            if (name == it.key()) {
+                printf("Profile '%s' already exists, are you sure you want to override it?\n[y/n] ", name.c_str());
+                getline(std::cin, *command);
+                if (command[0].rfind("n", 0) == 0) {
+                    return "";
+                }
+            }
+        }
+
         
         newScreen("Profile Creation");
 
@@ -211,7 +222,7 @@ struct UI {
                         msg = "Login Methods: 'microsoft', 'json'\n";
                         stage = 2;
                     } else if (command[0] == "q") {
-                        break;
+                        return "";
                     }
                     else { 
                         stage = 2; 
@@ -251,9 +262,9 @@ struct UI {
                     }
                 }
                 case 4: {
-                    Profiles.profile_json["user"][name]["login_method"] = command[0];
-                    printf("jaysong");
-                    break;
+                    Profiles.profile_json["user"][name]["login_method"] = "json";
+                    Profiles.write(Profiles);
+                    return "Profile '" + name + "' successfully created!\nRefer to `? json` for infomation on setting up your json files\n";
                 }
             }
         }
