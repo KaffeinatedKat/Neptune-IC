@@ -186,10 +186,9 @@ struct UI {
         }
     }
 
-    void newProfile(UserProfiles Profiles) {
+    std::string newProfile(UserProfiles Profiles, std::string name) {
         int stage = 1;
         std::string command[2];
-        std::string name;
         std::string msg;
         Profiles.load(Profiles);
         
@@ -198,15 +197,13 @@ struct UI {
         while (true) {
             switch (stage) {
                 case 1: {
-                    printf("\n");
-                    userInput(command, "Name of profile");
-                    if (command[0] == "q") { break; } 
-                    name = command[0];
-                    stage = 2;
-                    continue;
+                    if (name == "") {
+                        return "No name specified\nTry `? profiles` for more information\n\n";
+                    }
                 }
                 case 2: {
-                    printf("%s", msg.c_str());
+                    newScreen("Profile Creation");
+                    printf("\n[Profile Name] (?): %s\n%s", name.c_str(), msg.c_str());
                     userInput(command, "Login method");
                     if (command[0] == "microsoft") { stage = 3; }
                     else if (command[0] == "json") { stage = 4; }
@@ -220,7 +217,6 @@ struct UI {
                         stage = 2; 
                         msg = "Invalid login method\n";
                         newScreen("Profile Creation");
-                        printf("\n[Name of profile] (?): %s\n", name.c_str());
                     }
                     continue;
                 }
@@ -233,9 +229,9 @@ struct UI {
                     for (int c = 0; c < 3; c++) {
                         userInput(command, prompts[c]);
                         if (command[0] == "?") {
-                            newScreen("Profile Creation");
-                            printf("%s", microsoftProfileHelp().c_str());
-                            userInput(command, "");
+                            newScreen("MS Profile Creation Help");
+                            printf("%s\n[Return to exit]", microsoftProfileHelp().c_str());
+                            getline(std::cin, *command);
                             success = false;
                             break;
                         } else {
@@ -245,13 +241,12 @@ struct UI {
                     }
                     
                     if (success) {
-                        printf("\nProfile successfuly created!\n");
-                        userInput(command, "Press enter to return");
-                        stage = 0;
-                        continue;
+                        Profiles.write(Profiles);
+                        return "Profile '" + name + "' was successfully created!\n";
                     } else {
                         newScreen("Profile Creation");
-                        stage = 1;
+                        printf("\n[Profile Name] (?): %s\n[Login Method] (?): microsoft\n", name.c_str());
+                        stage = 3;
                         continue;
                     }
                 }
@@ -260,12 +255,7 @@ struct UI {
                     printf("jaysong");
                     break;
                 }
-                default: {
-                    Profiles.write(Profiles);
-                    break;
-                }
             }
-            break;
         }
     }
 

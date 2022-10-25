@@ -20,7 +20,8 @@ int main() {
     UserProfiles Profiles;
     UI Cli;
     std::string input;
-    std::string msg = "login with `login [profile]`\nFor help on creating profiles, do `? profiles`\n\n";
+    std::string defaultMsg = "login with `login [profile]`\nFor help on creating profiles, do `? profiles`\n\n";
+    std::string msg = defaultMsg;
 
     while (true) {
         std::string command[4];
@@ -28,6 +29,11 @@ int main() {
         printf("%s", msg.c_str());
         Cli.userInput(command, Student.first_name);
         json grades_json;
+
+        if (command[0] == "") {
+            msg = defaultMsg;
+            continue;
+        }
 
         if (command[0] == "login") {
             if (command[1] == "") {
@@ -44,16 +50,15 @@ int main() {
             Cli.allClassesMenu(Student, Error, Student.grades_json);
             Student.logged_in = false;
             Student.first_name = "None";
-            msg = "login with `login [profile]`\nFor help on creating profiles, do `? profiles`\n\n";
-
+            msg = defaultMsg;
+                
         } else if (command[0] == "profiles") {
             if (command[1] == "create") {
-                Cli.newProfile(Profiles);
+                msg = defaultMsg + Cli.newProfile(Profiles, command[2]);
             } else if (command[1] == "list") {
                 msg = Cli.listProfiles(Profiles, msg);
             } else if (command[1] == "delete") {
-                Profiles.remove(Profiles, command[2]);
-                msg = "Profile successfully deleted\n\n";
+                msg = defaultMsg + Profiles.remove(Profiles, command[2]);
             }
 
         } else if (command[0] == "?") {

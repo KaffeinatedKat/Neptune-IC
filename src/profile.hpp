@@ -20,11 +20,12 @@ struct UserProfiles {
         Profiles.load(Profiles);
     }
 
-    void remove(UserProfiles &Profiles, std::string name) {
+    std::string remove(UserProfiles &Profiles, std::string name) {
         Profiles.load(Profiles);
         auto path = nlohmann::json_pointer<json>{"/user"};    
         auto& user = Profiles.profile_json[path];
         user.erase(name);
         Profiles.write(Profiles);
+        return "Profile '" + name + "' was successfully deleted!\n";
     }
 };
