@@ -174,7 +174,7 @@ struct UI {
         Student.unreadNotifs = std::stoi(std::string(json::parse(u.text)["data"]["NewMessages"]["totalCount"]));  //  Total unread notifications 
 
         session.SetUrl(cpr::Url{Student.url + "/campus/prism?x=notifications.NotificationUser-updateLastViewed&urlFilter=portal"}); //  Update read notifications (in theroy)
-        cpr::Response r = session.Get();
+        cpr::Response n = session.Get();
 
         while (true) {
             int c = 0;
