@@ -1,14 +1,20 @@
 cmake_minimum_required(VERSION 3.10)
 
-# set the project name
 project(Neptune)
 
-# add the executable
 add_executable(neptune src/main.cpp)
 
 include(FetchContent)
-FetchContent_Declare(cpr GIT_REPOSITORY https://github.com/libcpr/cpr.git
-                         GIT_TAG 871ed52d350214a034f6ef8a3b8f51c5ce1bd400) # The commit hash for 1.9.0. Replace with the latest from: https://github.com/libcpr/cpr/releases
+
+# libxml2
+include_directories(/usr/include/libxml2)
+
+# libcpr
+FetchContent_Declare(cpr URL https://github.com/libcpr/cpr/archive/refs/tags/1.9.2.zip)
 FetchContent_MakeAvailable(cpr)
 
-target_link_libraries(neptune PRIVATE cpr::cpr)
+# nlohmann json
+FetchContent_Declare(json URL https://github.com/nlohmann/json/releases/download/v3.11.2/json.tar.xz)
+FetchContent_MakeAvailable(json)
+
+target_link_libraries(neptune PRIVATE cpr::cpr nlohmann_json::nlohmann_json)
