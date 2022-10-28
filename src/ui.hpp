@@ -51,7 +51,7 @@ struct UI {
             std::ifstream g("../userJson/" + Student.profile_name + "_" + temp.str() + ".json");
             course_json = json::parse(g);
         } else if (Student.login_method == "microsoft") {
-            session.SetUrl(cpr::Url{Student.url + Student.login_path}); //  Login to IC
+            session.SetUrl(cpr::Url{Student.login_url}); //  Login to IC
             session.SetParameters(Student.parameters);
             cpr::Response r = session.Post();
             session.SetUrl(cpr::Url{Student.url + "/campus/resources/portal/grades/detail/" + std::to_string(sectionID)}); //  Request class json via section_id
@@ -149,7 +149,7 @@ struct UI {
 
     void notifications(User Student, Options Settings) {
         cpr::Session session;
-        session.SetUrl(cpr::Url{Student.url + Student.login_path}); //  Login to IC to fetch notification data
+        session.SetUrl(cpr::Url{Student.login_url}); //  Login to IC to fetch notification data
         session.SetParameters(Student.parameters);
         cpr::Response r = session.Post();
         
