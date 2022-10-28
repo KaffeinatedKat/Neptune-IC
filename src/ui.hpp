@@ -173,7 +173,14 @@ struct UI {
         cpr::Response u = session.Get();
         Student.unreadNotifs = std::stoi(std::string(json::parse(u.text)["data"]["NewMessages"]["totalCount"]));  //  Total unread notifications 
 
-        session.SetUrl(cpr::Url{Student.url + "/campus/prism?x=notifications.NotificationUser-updateLastViewed&urlFilter=portal"}); //  Update read notifications
+        session.SetUrl(cpr::Url{Student.url + "/campus/prism?x=notifications.NotificationUser-updateLastViewed&urlFilter=portal"}); //  Update read notifications on IC side
+
+        session.SetUrl(cpr::Url{Student.url + "/campus/prism?x=user.HomePage-loadNewMessagesCount&urlFilter=portal"}); //  Re-update notification count for client to account for now read notifications
+        session.SetHeader(cpr::Header{{"Accept", "application/json"}});
+        cpr::Response ug = session.Get();
+        Student.unreadNotifs = std::stoi(std::string(json::parse(u.text)["data"]["NewMessages"]["totalCount"]));  //  New total unread notifications (usually 0 after this point, some edge cases however)
+
+
         cpr::Response n = session.Get();
 
         while (true) {
