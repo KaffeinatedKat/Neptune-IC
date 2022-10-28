@@ -42,10 +42,14 @@ struct User {
             Student.login_method = Profiles.profile_json["user"][Student.profile_name]["login_method"].get<std::string>();
 
             if (Student.login_method == "json") {
+                //  Read json files with profile name
                 std::ifstream g("../userJson/" + Student.profile_name + "_grades.json");
                 std::ifstream s("../userJson/" + Student.profile_name + "_students.json");
+                
+                //  Set variables 
                 Student.grades_json = json::parse(g);
                 Student.student_json = json::parse(s);
+                
                 g.close();
                 s.close();
                 Student.logged_in = true;
@@ -56,6 +60,7 @@ struct User {
                 Student.url = Profiles.profile_json["user"][Student.profile_name]["campus_url"].get<std::string>(); //  Infinite Campus URL
                 Student.parameters = cpr::Parameters{{"SAMLResponse", saml}};
                 
+                //  Login to infinite campus and GET reuest all URL's to get nessisary data
                 session.SetUrl(cpr::Url{Student.url + Student.login_path});
                 session.SetParameters(Student.parameters);
                 cpr::Response r = session.Post();       
@@ -70,8 +75,8 @@ struct User {
                 session.SetHeader(cpr::Header{{"Accept", "application/json"}});
                 cpr::Response u = session.Get();
 
-
-                Student.grades_json = json::parse(g.text);
+                //  Set all variables for json's and such after GET requesting all the URL's
+                Student.grades_json = json::parse(g.text); 
                 Student.student_json = json::parse(s.text);
                 Student.notifs_json = json::parse(n.text);
                 Student.unreadNotifs = std::stoi(std::string(json::parse(u.text)["data"]["RecentNotifications"]["count"]));
@@ -84,10 +89,10 @@ struct User {
                 }
                 Student.first_name = Student.student_json[0]["firstName"];
             }
-        } catch (nlohmann::detail::type_error) {
+        } catch (nlohmann::detail::type_error) { //  Lazy catch, general catchall for errors, present "no profile" error
             Student.error = Error.userNotFound(Student.profile_name);
             Student.logged_in = false;
-        } catch (nlohmann::detail::parse_error) {
+        } catch (nlohmann::detail::parse_error) { //  Lazy catch, this should only happen if the json files are not present, present error assuming they are absent
             Student.error = Error.noJson(Student.profile_name);
             Student.logged_in = false;
         }

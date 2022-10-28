@@ -12,18 +12,18 @@ struct Options {
     int default_notification_count;
 
     Options load(Options Settings) {
-        std::ifstream f("../settings.json");
+        std::ifstream f("../settings.json"); //  Open file, load json into settings_json, then close the file
         Settings.settings_json = json::parse(f);
         f.close();
 
         try {
-            Settings.default_notification_count = Settings.settings_json[0]["notification-count"];
+            Settings.default_notification_count = Settings.settings_json[0]["notification-count"]; //  Try settings notification count
         } catch (nlohmann::detail::type_error) {
-            Settings.default_notification_count = 5;
+            Settings.default_notification_count = 5; //  If value is absent, default is 5
         }
 
-        if (Settings.settings_json[0]["colored-text"]["enabled"] == false) {
-            Settings.missing_color = "";
+        if (Settings.settings_json[0]["colored-text"]["enabled"] == false) { //  Completely disable ascii escape codes is color setting is disabled, for terminals that do not support it
+            Settings.missing_color = "";  
             Settings.color_reset = "";
         } else {
             Settings.missing_color = "\033[1;31m";
