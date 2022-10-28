@@ -17,6 +17,7 @@ struct User {
     UserProfiles Profiles;
     json grades_json, student_json, notifs_json;
     bool logged_in = false;
+    bool fetch = false;
     cpr::Parameters parameters;
     std::string first_name = "None";
     std::string profile_name;
@@ -25,8 +26,9 @@ struct User {
     std::string ms_url;
     std::string login_path;
     std::string login_method;
-    std::string email;
+    std::string username;
     std::string password;
+    std::string login_url;
     int unreadNotifs = 0;
     std::list<int> courses;
 
@@ -53,17 +55,47 @@ struct User {
                 g.close();
                 s.close();
                 Student.logged_in = true;
-            } else if (Student.login_method == "microsoft") {
+            } else if (Student.login_method == "username") {
                 cpr::Session session;
+                std::string iD;
+                std::string appName;
+                Student.url = Profiles.profile_json["user"][Student.profile_name]["campus_url"].get<std::string>();
+                Student.username = Profiles.profile_json["user"][Student.profile_name]["username"].get<std::string>();
+                Student.password = Profiles.profile_json["user"][Student.profile_name]["password"].get<std::string>();
+
+                session.SetUrl(cpr::Url{Student.url}); //  Request url to get appName
+                cpr::Response s = session.Get();
+                appName = std::string(s.url).erase(0, std::string(s.url).find("campus/") + 7); //  Isolate the appName
+                appName = appName.erase(appName.find("."));
+    
+                session.SetUrl(cpr::Url{Student.url + "/campus/portal/students/" + appName + ".jsp"}); //  Request student page to get portalUrl
+                cpr::Response r = session.Get();
+
+                iD = r.text.erase(0, r.text.find("portal/students/" + appName + ".jsp")); //  Isolate the line of html with the portalUrl for login
+                iD.erase(iD.find("\"")); //  Truncate everyting after the " to isolate just the portalUrl string
+
+                Student.login_url = Student.url + "/campus/verify.jsp";
+                Student.parameters = cpr::Parameters{{"username", Student.username}, {"password", Student.password}, {"portalUrl", iD}, {"appName", appName}};
+                Student.fetch = true;
+
+            } else if (Student.login_method == "microsoft") {
                 std::string saml = Profiles.profile_json["user"][Student.profile_name]["saml"].get<std::string>(); //  SAMLResponse
                 Student.login_path = Profiles.profile_json["user"][Student.profile_name]["login_path"].get<std::string>(); //  SAMLResponse POST path
                 Student.url = Profiles.profile_json["user"][Student.profile_name]["campus_url"].get<std::string>(); //  Infinite Campus URL
                 Student.parameters = cpr::Parameters{{"SAMLResponse", saml}};
-                
+                Student.login_url = Student.url + Student.login_path;
+                Student.fetch = true;
+            }
+            
+            if (Student.fetch) {
+                cpr::Session session;
+                Student.fetch = false;
+
                 //  Login to infinite campus and GET reuest all URL's to get nessisary data
-                session.SetUrl(cpr::Url{Student.url + Student.login_path});
+                session.SetUrl(cpr::Url{Student.login_url});
                 session.SetParameters(Student.parameters);
                 cpr::Response r = session.Post();       
+
                 session.SetUrl(cpr::Url{Student.url + "/campus/resources/portal/grades"});
                 cpr::Response g = session.Get();
                 session.SetUrl(cpr::Url{Student.url + "/campus/api/portal/students"});
@@ -81,6 +113,7 @@ struct User {
                 Student.notifs_json = json::parse(n.text);
                 Student.unreadNotifs = std::stoi(std::string(json::parse(u.text)["data"]["RecentNotifications"]["count"]));
                 Student.logged_in = true;
+
             }
 
             if (Student.logged_in) {
