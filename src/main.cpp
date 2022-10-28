@@ -19,6 +19,9 @@ int main() {
     Exceptions Error;
     UserProfiles Profiles;
     UI Cli;
+    Options Settings;
+
+    Settings = Settings.load(Settings);
     std::string input;
     std::string defaultMsg = "login with `login [profile]`\nFor help on creating profiles, do `? profiles`\n\n";
     std::string msg = defaultMsg;
@@ -46,8 +49,7 @@ int main() {
                 msg = Student.error;
                 continue;
             }
-
-            Cli.allClassesMenu(Student, Error, Student.grades_json);
+            Cli.allClassesMenu(Student, Error, Settings, Student.grades_json);
             Student.logged_in = false;
             Student.first_name = "None";
             msg = defaultMsg;

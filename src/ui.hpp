@@ -50,7 +50,7 @@ struct UI {
 
     }
 
-    void classMenu(User Student, int sectionID) {
+    void classMenu(User Student, int sectionID, Options Settings) {
         int n = 0;
         int index = -1;
         std::string section;
@@ -90,7 +90,7 @@ struct UI {
                     
                     if (index == n - 1) { //  If user input index == category index
                         printf(" >>\n");
-                        expandCategory(Student, it.value()); //  Expand the category and print all its assignments
+                        expandCategory(Student, it.value(), Settings); //  Expand the category and print all its assignments
                     } else {
                         printf("\n");
                     }
@@ -111,7 +111,7 @@ struct UI {
         }
     }
 
-    void allClassesMenu(User Student, Exceptions Error, json student_info) {
+    void allClassesMenu(User Student, Exceptions Error, Options Settings, json student_info) {
         std::string msg = "";
         while (true) {
             int i = 0;
@@ -142,18 +142,18 @@ struct UI {
                     msg = "Input must be a number";
                     continue;
                 }
-                classMenu(Student, *index); //  Expand class from sectionID index
+                classMenu(Student, *index, Settings); //  Expand class from sectionID index
                 msg = "";
             }
         }
     };
 
-    void expandCategory(User Student, json course_json) {
+    void expandCategory(User Student, json course_json, Options Settings) {
         std::string missing;
         for (auto& it : course_json["assignments"].items()) {
             missing = "    ";
             try {
-                if (it.value()["missing"]) { missing = "\033[1;31m[M] \033[0m"; } //  Oooh fancy colors
+                if (it.value()["missing"]) { missing = Settings.missing_color + "[M] " + Settings.color_reset; } //  Oooh fancy colors
                 //  "Assignment Name" [earned/total points]
                 printf("\t\t%s%s %3s%.2f/%.2f]\n", missing.c_str(), std::string(it.value()["assignmentName"]).c_str(), std::string("[").c_str(), std::stof(it.value()["scorePoints"].get<std::string>()), it.value()["totalPoints"].get<double>());
             } catch (nlohmann::detail::type_error) { //  Again with the jank, ungraded assignments also cause issues
