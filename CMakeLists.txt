@@ -6,9 +6,6 @@ add_executable(neptune src/main.cpp)
 
 include(FetchContent)
 
-# libxml2
-include_directories(/usr/include/libxml2)
-
 # libcpr
 FetchContent_Declare(cpr URL https://github.com/libcpr/cpr/archive/refs/tags/1.9.2.zip)
 FetchContent_MakeAvailable(cpr)
