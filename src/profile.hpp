@@ -11,6 +11,7 @@ struct UserProfiles {
     void load(UserProfiles &Profiles) {
         std::ifstream f("../profiles.json");
         Profiles.profile_json = json::parse(f);
+        f.close();
     };
 
     void write(UserProfiles &Profiles) {

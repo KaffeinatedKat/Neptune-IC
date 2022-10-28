@@ -46,6 +46,8 @@ struct User {
                 std::ifstream s("../userJson/" + Student.profile_name + "_students.json");
                 Student.grades_json = json::parse(g);
                 Student.student_json = json::parse(s);
+                g.close();
+                s.close();
                 Student.logged_in = true;
             } else if (Student.login_method == "microsoft") {
                 cpr::Session session;

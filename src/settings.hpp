@@ -10,6 +10,7 @@ struct Options {
     Options load(Options Settings) {
         std::ifstream f("../settings.json");
         Settings.settings_json = json::parse(f);
+        f.close();
         return Settings;
     }
 };
