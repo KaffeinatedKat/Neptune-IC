@@ -6,7 +6,7 @@ using json = nlohmann::json;
 
 struct Options {
     json settings_json;
-
+    bool colors = true;
     std::string missing_color;
     std::string color_reset;
     int default_notification_count;
@@ -23,9 +23,11 @@ struct Options {
         }
 
         if (Settings.settings_json[0]["colored-text"]["enabled"] == false) { //  Completely disable ascii escape codes is color setting is disabled, for terminals that do not support it
+            Settings.colors = false;
             Settings.missing_color = "";  
             Settings.color_reset = "";
         } else {
+            Settings.colors = true;
             Settings.missing_color = "\033[1;31m";
             Settings.color_reset = "\033[0m";
         }
@@ -34,18 +36,15 @@ struct Options {
     }
 
     
-    std::string gradeColor(std::string grade) {  // TODO: this can only be used to set colors in one place because of how it returns, fix that shit
-            Options Settings;
-            Settings = Settings.load(Settings);
-
+    std::string gradeColor(Options Settings, std::string grade) {  //  Return color code from grade in color settings, if no match return nothing
             json colors = Settings.settings_json[0]["colored-text"];
 
-            if (colors["enabled"] != true) { return "(" + grade; }
+            if (Settings.colors == false) { return ""; } //  If color settings disabled, return no color esacpe code
 
             for (auto& it : colors["grade-colors"].items()) {
-                if (grade == it.key()) { return "\033[" + std::string(it.value()) + "m(" + grade; }
+                if (grade == it.key()) { return "\033[" + std::string(it.value()) + "m"; }
             }
 
-            return "(" + grade;
+            return ""; //  Return nothing if no matches
     }
 };

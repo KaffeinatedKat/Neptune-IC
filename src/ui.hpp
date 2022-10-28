@@ -105,7 +105,7 @@ struct UI {
 
             for (auto& it : student_info[0]["terms"][0]["courses"].items()) { //  Print each class
                 //  (Grade) "Class Name"
-                printf("[%d] %s) %s\033[0m\n", i++, Settings.gradeColor(it.value()["gradingTasks"][0]["progressScore"]).c_str(), std::string(it.value()["courseName"]).c_str());
+                printf("[%d] %s(%s) %s%s\n", i++, Settings.gradeColor(Settings, it.value()["gradingTasks"][0]["progressScore"]).c_str(), std::string(it.value()["gradingTasks"][0]["progressScore"]).c_str(), std::string(it.value()["courseName"]).c_str(), Settings.color_reset.c_str());
             }
 
             printf("\n%s\n", msg.c_str());
