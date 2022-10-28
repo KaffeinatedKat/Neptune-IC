@@ -23,12 +23,14 @@ int main() {
 
     Settings = Settings.load(Settings);
     std::string input;
-    std::string defaultMsg = "login with `login [profile]`\nFor help on creating profiles, do `? profiles`\n\n";
+    std::string defaultMsg = "login with `login [profile]`\nFor help on creating profiles, do `? profiles`\n\n\n";
     std::string msg = defaultMsg;
+    bool reset = true;
 
     while (true) {
         std::string command[4];
-        Cli.newScreen("Neptune");
+        if (reset) { Cli.newScreen("Neptune"); }
+        reset = true;
         printf("%s", msg.c_str());
         Cli.userInput(command, Student.first_name);
         json grades_json;
@@ -56,11 +58,12 @@ int main() {
                 
         } else if (command[0] == "profiles") {
             if (command[1] == "create") {
-                msg = defaultMsg + Cli.newProfile(Profiles, command[2]);
+                msg = defaultMsg + "\033[A" + Cli.newProfile(Profiles, command[2]);
             } else if (command[1] == "list") {
-                msg = Cli.listProfiles(Profiles, msg);
+                msg = Cli.listProfiles(Profiles, msg) + "\n";
             } else if (command[1] == "delete") {
-                msg = defaultMsg + Profiles.remove(Profiles, command[2]);
+                reset = false;
+                msg = "\033[A\033[A\33[2K\r" + Profiles.remove(Profiles, command[2]);
             }
 
         } else if (command[0] == "?") {
@@ -72,7 +75,8 @@ int main() {
             std::exit(0);
         
         } else {
-            msg = "Command '" + command[0] + "' not found\n\n";
+            reset = false;
+            msg = "\033[A\033[A\33[2K\rCommand '" + command[0] + "' not found\n";
         
         }
     }

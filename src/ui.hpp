@@ -30,7 +30,7 @@ struct UI {
 
     void userInput(std::string command[], std::string text) {
         std::string input;
-        printf("[%s] (?): ", text.c_str());
+        printf("\33[2K\r[%s] (?): ", text.c_str());
         std::getline(std::cin, input);
         split(input, command);
     }
