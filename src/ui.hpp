@@ -34,22 +34,7 @@ struct UI {
         split(input, command);
     }
 
-    std::string gradeColor(std::string grade) {  // TODO: this can only be used to set colors in one place because of how it returns, fix that shit
-        Options Settings;
-        Settings = Settings.load(Settings);
-
-        json colors = Settings.settings_json[0]["colored-text"];
-
-        if (colors["enabled"] != true) { return "(" + grade; }
-
-        for (auto& it : colors["grade-colors"].items()) {
-            if (grade == it.key()) { return "\033[" + std::string(it.value()) + "m(" + grade; }
-        }
-
-        return "(" + grade;
-
-    }
-
+    
     void classMenu(User Student, int sectionID, Options Settings) {
         int n = 0;
         int index = -1;
@@ -120,7 +105,7 @@ struct UI {
 
             for (auto& it : student_info[0]["terms"][0]["courses"].items()) { //  Print each class
                 //  (Grade) "Class Name"
-                printf("[%d] %s) %s\033[0m\n", i++, gradeColor(it.value()["gradingTasks"][0]["progressScore"]).c_str(), std::string(it.value()["courseName"]).c_str());
+                printf("[%d] %s) %s\033[0m\n", i++, Settings.gradeColor(it.value()["gradingTasks"][0]["progressScore"]).c_str(), std::string(it.value()["courseName"]).c_str());
             }
 
             printf("\n%s\n", msg.c_str());
@@ -133,7 +118,7 @@ struct UI {
                 Student = Student.login(Student, Error);
                 continue;
             } else if (command[0] == "n") { //  Notification menu
-                notifications(Student);
+                notifications(Student, Settings);
             } else {
                 auto index = Student.courses.begin(); //  'Random access' for the class vector
                 try {
@@ -162,7 +147,7 @@ struct UI {
         }
     }
 
-    void notifications(User Student) {
+    void notifications(User Student, Options Settings) {
         cpr::Session session;
         session.SetUrl(cpr::Url{Student.url + Student.login_path}); //  Login to IC to fetch notification data
         session.SetParameters(Student.parameters);
@@ -192,7 +177,7 @@ struct UI {
                 stars = "";
                 if (it.value()["read"] == "false") { stars = "*"; };
                 printf("[%d] %s%s%s\n", c++, stars.c_str(), std::string(it.value()["finalText"]).c_str(), stars.c_str());
-                if (c > showCount - 1) { break; };
+                if (c > Settings.default_notification_count - 1) { break; };
             }
             std::string command[4];
             userInput(command, Student.first_name);
