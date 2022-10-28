@@ -1,5 +1,6 @@
 #include <cpr/session.h>
 #include <cstdio>
+#include <nlohmann/detail/exceptions.hpp>
 #include <string>
 #include <sstream>
 #include <cpr/cpr.h>
@@ -50,7 +51,7 @@ struct UI {
         if (Student.login_method == "json_file") {
             std::ifstream g("../userJson/" + Student.profile_name + "_" + temp.str() + ".json");
             course_json = json::parse(g);
-        } else if (Student.login_method == "microsoft") {
+        } else if (Student.login_method == "microsoft" || Student.login_method == "username") {
             session.SetUrl(cpr::Url{Student.login_url}); //  Login to IC
             session.SetParameters(Student.parameters);
             cpr::Response r = session.Post();
@@ -104,8 +105,12 @@ struct UI {
             printf("[N]: %d\n\n", Student.unreadNotifs); //  Print unread notification count
 
             for (auto& it : student_info[0]["terms"][0]["courses"].items()) { //  Print each class
-                //  (Grade) "Class Name"
-                printf("[%d] %s(%s) %s%s\n", i++, Settings.gradeColor(Settings, it.value()["gradingTasks"][0]["progressScore"]).c_str(), std::string(it.value()["gradingTasks"][0]["progressScore"]).c_str(), std::string(it.value()["courseName"]).c_str(), Settings.color_reset.c_str());
+                try {
+                    //  (Grade) "Class Name"
+                    printf("[%d] %s(%s) %s%s\n", i++, Settings.gradeColor(Settings, it.value()["gradingTasks"][0]["progressScore"]).c_str(), std::string(it.value()["gradingTasks"][0]["progressScore"]).c_str(), std::string(it.value()["courseName"]).c_str(), Settings.color_reset.c_str());
+                } catch (nlohmann::detail::type_error) { //  Yet another shitty catch, classes with no grades cause issues
+                    continue;
+                }
             }
 
             printf("\n%s\n", msg.c_str());
