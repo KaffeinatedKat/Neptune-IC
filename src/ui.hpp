@@ -171,7 +171,6 @@ struct UI {
         session.SetUrl(cpr::Url{Student.url + "/campus/prism?x=user.HomePage-loadNewMessagesCount&urlFilter=portal"}); //  Load notifications
         session.SetHeader(cpr::Header{{"Accept", "application/json"}});
         cpr::Response u = session.Get();
-        Student.unreadNotifs = std::stoi(std::string(json::parse(u.text)["data"]["NewMessages"]["totalCount"]));  //  Total unread notifications 
 
         session.SetUrl(cpr::Url{Student.url + "/campus/prism?x=notifications.NotificationUser-updateLastViewed&urlFilter=portal"}); //  Update read notifications on IC side
 
