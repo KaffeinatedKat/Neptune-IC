@@ -65,14 +65,13 @@ struct UI {
             n = 0;
 
             //  "ClassName" ["Grade"] (Percentage)
-            //  TODO: add colors here
-            printf("\n%s [%s] (%.2f%%)\n", std::string(course_json["details"][0]["task"]["courseName"]).c_str(), std::string(course_json["details"][0]["task"]["progressScore"]).c_str(), float(course_json["details"][0]["task"]["progressPercent"]));
+            printf("\n%s%s [%s] (%.2f%%)%s\n", Settings.gradeColor(Settings, course_json["details"][0]["task"]["progressScore"]).c_str(), std::string(course_json["details"][0]["task"]["courseName"]).c_str(), std::string(course_json["details"][0]["task"]["progressScore"]).c_str(), float(course_json["details"][0]["task"]["progressPercent"]), Settings.color_reset.c_str());
 
             //  Print each grade category
             for (auto& it : course_json["details"][0]["categories"].items()) {
                 try {
                     //   "Category Name" [earned/total points] (Percentage)
-                    printf("\t[%d] %s [%.2f/%.2f] (%.2f%%)", n++, std::string(it.value()["name"]).c_str(), float(it.value()["progress"]["progressPointsEarned"]), float(it.value()["progress"]["progressTotalPoints"]), float(it.value()["progress"]["progressPercent"]));
+                    printf("\t[%d]%s %s [%.2f/%.2f] (%.2f%%)%s", n++, Settings.gradeColor(Settings, it.value()["progress"]["progressScore"]).c_str(), std::string(it.value()["name"]).c_str(), float(it.value()["progress"]["progressPointsEarned"]), float(it.value()["progress"]["progressTotalPoints"]), float(it.value()["progress"]["progressPercent"]), Settings.color_reset.c_str());
                     
                     if (index == n - 1) { //  If user input index == category index
                         printf(" >>\n");
