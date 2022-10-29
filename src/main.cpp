@@ -48,7 +48,8 @@ int main() {
             Student.profile_name = command[1];
             Student = Student.login(Student, Error);
             if (Student.logged_in != true) {
-                msg = Student.error;
+                msg = "\033[A\033[A\33[2K\r" + Student.error;
+                reset = false;
                 continue;
             }
             Cli.allClassesMenu(Student, Error, Settings, Student.grades_json);
