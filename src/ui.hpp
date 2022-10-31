@@ -221,10 +221,10 @@ struct UI {
                     newScreen("Profile Creation");
                     printf("\n[Profile Name] (?): %s\n%s", name.c_str(), msg.c_str());
                     userInput(command, "Login method");
-                    if (command[0] == "microsoft") { stage = 3; }
+                    if (command[0] == "microsoft" || command[0] == "username") { stage = 3; }
                     else if (command[0] == "json") { stage = 4; }
                     else if (command[0] == "?") { 
-                        msg = "Login Methods: 'microsoft', 'json'\n";
+                        msg = "Login Methods: 'microsoft', 'username', 'json'\n";
                         stage = 2;
                     } else if (command[0] == "q") {
                         return "";
@@ -237,10 +237,17 @@ struct UI {
                     continue;
                 }
                 case 3: {
-                    std::string json_entries[4] = {"campus_url", "login_path", "saml"};
-                    std::string prompts[4] = {"IC URL", "IC Login URL Path", "SAMLResponce"};
+                    std::string *json_entries;
+                    std::string *prompts;
+                    if (command[0] == "microsoft") {
+                        json_entries = new std::string[3] {"campus_url", "login_path", "saml"};
+                        prompts = new std::string[3] {"IC URL", "IC Login URL Path", "SAMLResponce"};
+                    } else if (command[0] == "username") {
+                        json_entries = new std::string[3] {"campus_url", "username", "password"};
+                        prompts = new std::string[3] {"IC URL", "Username", "Password"};
+                    }
                     bool success = false;
-                    Profiles.profile_json["user"][name]["login_method"] = "microsoft";
+                    Profiles.profile_json["user"][name]["login_method"] = command[0];
                         
                     for (int c = 0; c < 3; c++) { //  Loop through items to be set, and set each one
                         userInput(command, prompts[c]);
@@ -256,6 +263,9 @@ struct UI {
                         }
                     }
                     
+                    delete[] json_entries;
+                    delete[] prompts;
+
                     if (success) { //  If all items are successfully set, write to profiles.json and return
                         Profiles.write(Profiles);
                         return "Profile '" + name + "' was successfully created!\n";
