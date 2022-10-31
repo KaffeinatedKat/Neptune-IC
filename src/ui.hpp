@@ -153,6 +153,10 @@ struct UI {
 
     void notifications(User Student, Options Settings) {
         cpr::Session session;
+        int *showCount;
+        std::string msg = "\n";
+        showCount = new int (Settings.default_notification_count); //  How many notifications to load
+
         session.SetUrl(cpr::Url{Student.login_url}); //  Login to IC to fetch notification data
         session.SetParameters(Student.parameters);
         cpr::Response r = session.Post();
@@ -173,7 +177,6 @@ struct UI {
 
         while (true) {
             int c = 0;
-            int showCount = 5; //  How many notifications to load
             std::string stars = "";
             newScreen("Notifications");
             printf("\n");
@@ -181,12 +184,21 @@ struct UI {
                 stars = "";
                 if (it.value()["read"] == "false") { stars = "*"; };
                 printf("[%d] %s%s%s\n", c++, stars.c_str(), std::string(it.value()["finalText"]).c_str(), stars.c_str());
-                if (c > Settings.default_notification_count - 1) { break; };
+                if (c > *showCount - 1) { break; };
             }
+            printf("\n%s", msg.c_str());
             std::string command[4];
             userInput(command, Student.first_name);
             if (command[0] == "b") {
+                delete showCount;
                 break;
+            } else {
+                try {
+                    showCount = new int (std::stoi(command[0]));
+                    msg = "\n";
+                } catch (std::invalid_argument) {
+                    msg = "Input must be a number (or b)\n";
+                }
             }
         }
     }
