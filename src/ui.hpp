@@ -83,7 +83,7 @@ struct UI {
                     ;
                 }
 
-                            }
+            }
             printf("\n%s\n", msg.c_str());
             std::string command[4];
             userInput(command, Student.first_name);
