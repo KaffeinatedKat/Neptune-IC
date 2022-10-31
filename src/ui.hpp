@@ -106,7 +106,7 @@ struct UI {
             for (auto& it : student_info[0]["terms"][0]["courses"].items()) { //  Print each class
                 try {
                     //  (Grade) "Class Name"
-                    printf("[%d] %s(%s) %s%s\n", i++, Settings.gradeColor(Settings, it.value()["gradingTasks"][0]["progressScore"]).c_str(), std::string(it.value()["gradingTasks"][0]["progressScore"]).c_str(), std::string(it.value()["courseName"]).c_str(), Settings.color_reset.c_str());
+                    printf("[%d] %s[%s] (%.2f%%) %s %s\n", i++, Settings.gradeColor(Settings, it.value()["gradingTasks"][0]["progressScore"]).c_str(), std::string(it.value()["gradingTasks"][0]["progressScore"]).c_str(), float(it.value()["gradingTasks"][0]["progressPercent"]), std::string(it.value()["courseName"]).c_str(), Settings.color_reset.c_str());
                 } catch (nlohmann::detail::type_error) { //  Yet another shitty catch, classes with no grades cause issues
                     continue;
                 }
