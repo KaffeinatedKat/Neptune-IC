@@ -11,7 +11,7 @@ FetchContent_Declare(cpr URL https://github.com/libcpr/cpr/archive/refs/tags/1.9
 FetchContent_MakeAvailable(cpr)
 
 # nlohmann json
-FetchContent_Declare(json URL https://github.com/nlohmann/json/releases/download/v3.11.2/json.tar.xz)
+FetchContent_Declare(json URL https://github.com/nlohmann/json/archive/refs/tags/v3.11.0.tar.gz)
 FetchContent_MakeAvailable(json)
 
 target_link_libraries(neptune PRIVATE cpr::cpr nlohmann_json::nlohmann_json)
