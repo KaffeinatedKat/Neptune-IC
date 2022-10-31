@@ -239,18 +239,21 @@ struct UI {
                 case 3: {
                     std::string *json_entries;
                     std::string *prompts;
-                    if (command[0] == "microsoft") {
+                    std::string method = command[0];
+
+                    //  Lists for microsoft and username json paths and names
+                    if (method == "microsoft") {
                         json_entries = new std::string[3] {"campus_url", "login_path", "saml"};
                         prompts = new std::string[3] {"IC URL", "IC Login URL Path", "SAMLResponce"};
-                    } else if (command[0] == "username") {
+                    } else if (method == "username") {
                         json_entries = new std::string[3] {"campus_url", "username", "password"};
                         prompts = new std::string[3] {"IC URL", "Username", "Password"};
                     }
                     bool success = false;
-                    Profiles.profile_json["user"][name]["login_method"] = command[0];
+                    Profiles.profile_json["user"][name]["login_method"] = method;
                         
                     for (int c = 0; c < 3; c++) { //  Loop through items to be set, and set each one
-                        userInput(command, prompts[c]);
+                        userInput(command, prompts[c]); //  Prompt user with value from prompts[]
                         if (command[0] == "?") { //  If "?" is entered at any point, help will be shown
                             newScreen("MS Profile Creation Help");
                             printf("%s\n[Return to exit]", microsoftProfileHelp().c_str());
@@ -258,20 +261,20 @@ struct UI {
                             success = false;
                             break;
                         } else {
-                            Profiles.profile_json["user"][name][json_entries[c]] = command[0];  //  Set item and move to the next
+                            Profiles.profile_json["user"][name][json_entries[c]] = command[0];  //  Set item from json_entries[] and move to the next item
                             success = true;
                         }
                     }
-                    
-                    delete[] json_entries;
-                    delete[] prompts;
 
                     if (success) { //  If all items are successfully set, write to profiles.json and return
+                        delete[] json_entries; //  Free memory before exiting
+                        delete[] prompts;
+
                         Profiles.write(Profiles);
                         return "Profile '" + name + "' was successfully created!\n";
                     } else { //  If not, return to variable set loop till all items successfully set
                         newScreen("Profile Creation");
-                        printf("\n[Profile Name] (?): %s\n[Login Method] (?): microsoft\n", name.c_str());
+                        printf("\n[Profile Name] (?): %s\n[Login Method] (?): %s\n", name.c_str(), method.c_str());
                         stage = 3;
                         continue;
                     }
