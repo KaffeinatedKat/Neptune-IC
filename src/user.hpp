@@ -16,15 +16,6 @@
 
 using json = nlohmann::json;
 
-std::string getDate() {
-    std::time_t t = std::time(nullptr);
-    std::tm* now = std::localtime(&t);
- 
-    char buffer[128];
-    strftime(buffer, sizeof(buffer), "%Y-%m-%d", now);
-    return buffer;
-}
-
 struct User {
     UserProfiles Profiles;
     json grades_json, student_json, notifs_json;
@@ -46,7 +37,14 @@ struct User {
     std::list<int> courses;
     std::list<std::string> term_list;
 
-    
+    std::string getDate() {
+        std::time_t t = std::time(nullptr);
+        std::tm* now = std::localtime(&t);
+ 
+        char buffer[128];
+        strftime(buffer, sizeof(buffer), "%Y-%m-%d", now);
+        return buffer;
+    }
 
 
     User login(User Student, Exceptions Error) {
