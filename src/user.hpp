@@ -5,6 +5,8 @@
 #include <string>
 #include <fstream>
 #include <iostream>
+#include <chrono>
+#include <ctime>
 #include <cpr/cpr.h>
 #include <nlohmann/json.hpp>
 
@@ -12,6 +14,15 @@
 #include "profile.hpp"
 
 using json = nlohmann::json;
+
+std::string getDate() {
+    std::time_t t = std::time(nullptr);
+    std::tm* now = std::localtime(&t);
+ 
+    char buffer[128];
+    strftime(buffer, sizeof(buffer), "%Y-%m-%d", now);
+    return buffer;
+}
 
 struct User {
     UserProfiles Profiles;
@@ -29,6 +40,7 @@ struct User {
     std::string username;
     std::string password;
     std::string login_url;
+    std::string term;
     int unreadNotifs = 0;
     std::list<int> courses;
 
@@ -117,9 +129,21 @@ struct User {
             }
 
             if (Student.logged_in) {
-                for (auto& it : Student.grades_json[0]["terms"][0]["courses"].items()) { //  Add each course's ID into a list to access each class via an index
-                    Student.courses.push_back(it.value()["sectionID"]);
+                std::string current_date = getDate(); //  Get current date
+                
+                for (auto& it : Student.grades_json[0]["terms"].items()) { //  Loop through each term and compare dates to current
+                    if (current_date > it.value()["startDate"] && current_date < it.value()["endDate"]) { //  If current date is between a terms start and end dates, that is the current term
+                        Student.term = it.value()["termName"];
+                        break;
+                    }
                 }
+
+                for (auto& it : Student.grades_json[0]["terms"].items()) { //  Add each course's ID into a list to access each class via an index 
+                    if (it.value()["termName"] == Student.term) { //  Only add classes for current term
+                        Student.courses.push_back(it.value()["courses"][0]["sectionID"]);
+                    }
+                }
+
                 Student.first_name = Student.student_json[0]["firstName"];
             }
         } catch (nlohmann::detail::type_error) { //  Lazy catch, general catchall for errors, present "no profile" error
