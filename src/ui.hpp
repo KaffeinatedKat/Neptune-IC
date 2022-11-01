@@ -1,3 +1,4 @@
+#pragma once
 #include <cpr/session.h>
 #include <cstdio>
 #include <nlohmann/detail/exceptions.hpp>

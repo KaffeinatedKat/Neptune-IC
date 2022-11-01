@@ -1,3 +1,4 @@
+#pragma once
 #include <cpr/redirect.h>
 #include <cpr/response.h>
 #include <cpr/session.h>
