@@ -101,7 +101,7 @@ struct UI {
         while (true) {
             int i = 0;
             newScreen("Student Overview");
-            printf("[N]: %d\n\n", Student.unreadNotifs); //  Print unread notification count
+            printf("[T]: %s  [N]: %d\n\n", Student.term.c_str(), Student.unreadNotifs); //  Print unread notification count
 
             for (auto& it : student_info[0]["terms"][0]["courses"].items()) { //  Print each class
                 try {
@@ -123,6 +123,22 @@ struct UI {
                 continue;
             } else if (command[0] == "n") { //  Notification menu
                 notifications(Student, Settings);
+            } else if (command[0] == "terms") {
+                if (command[1] == "list") {
+                    msg.append("Terms: ");
+                    for (auto& it : Student.term_list) {
+                        msg.append("'" + std::string(it) + "' ");
+                    }
+                } else if (command[1] == "set") { //  TODO: Make this actually update the term when fetching stuff
+                    bool set = false;
+                    for (auto& it : Student.term_list) {
+                        if (command[2] == std::string(it)) { 
+                            Student.term = command[2];
+                            set = true;
+                        }
+                    }
+                    if (!set) { msg = "Invalid term"; }
+                }
             } else {
                 auto index = Student.courses.begin(); //  'Random access' for the class vector
                 try {

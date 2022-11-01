@@ -43,6 +43,7 @@ struct User {
     std::string term;
     int unreadNotifs = 0;
     std::list<int> courses;
+    std::list<std::string> term_list;
 
     
 
@@ -134,8 +135,8 @@ struct User {
                 for (auto& it : Student.grades_json[0]["terms"].items()) { //  Loop through each term and compare dates to current
                     if (current_date > it.value()["startDate"] && current_date < it.value()["endDate"]) { //  If current date is between a terms start and end dates, that is the current term
                         Student.term = it.value()["termName"];
-                        break;
                     }
+                    Student.term_list.push_back(std::string(it.value()["termName"]));
                 }
 
                 for (auto& it : Student.grades_json[0]["terms"].items()) { //  Add each course's ID into a list to access each class via an index 
