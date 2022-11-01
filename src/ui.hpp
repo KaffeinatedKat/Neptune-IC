@@ -179,6 +179,7 @@ struct UI {
         cpr::Response r = session.Post();
         
         session.SetUrl(cpr::Url{Student.url + "/campus/prism?x=notifications.NotificationUser-updateLastViewed&urlFilter=portal"}); //  Update read notifications on IC side
+        cpr::Response un = session.Get();
 
         session.SetUrl(cpr::Url{Student.url + "/campus/prism?x=user.HomePage-loadNewMessagesCount&urlFilter=portal"}); //  Re-update notification count for client to account for now read notifications
         session.SetHeader(cpr::Header{{"Accept", "application/json"}});
