@@ -130,6 +130,8 @@ struct User {
 
             if (Student.logged_in) {
                 std::string current_date = getDate(); //  Get current date
+                Student.term_list.clear(); //  Clear terms and courses to prevent overlapping when logging out and back in
+                Student.courses.clear();
                 
                 for (auto& it : Student.grades_json[0]["terms"].items()) { //  Loop through each term and compare dates to current
                     if (current_date > it.value()["startDate"] && current_date < it.value()["endDate"]) { //  If current date is between a terms start and end dates, that is the current term
