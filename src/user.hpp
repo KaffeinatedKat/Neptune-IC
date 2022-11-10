@@ -47,7 +47,7 @@ struct User {
     }
 
 
-    User login(User Student, Exceptions Error) {
+    User login(User &Student, Exceptions Error) {
         Profiles.load(Profiles);
         json student_json, grades_json, notifs_json;
                         

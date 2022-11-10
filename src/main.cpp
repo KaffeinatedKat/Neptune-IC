@@ -36,18 +36,15 @@ int main() {
         json grades_json;
 
         if (command[0] == "") {
-            msg = defaultMsg;
             continue;
-        }
-
-        if (command[0] == "login") {
+        } else if (command[0] == "login") {
             if (command[1] == "") {
                 msg = "You must specify a user\n\n";
                 continue;
             }
             Student.profile_name = command[1];
-            Student = Student.login(Student, Error);
-            if (Student.logged_in != true) {
+            Student.login(Student, Error); //  Try logging into profile with specified name
+            if (Student.logged_in != true) { //  Print error if login unsuccessful
                 msg = "\033[A\033[A\33[2K\r" + Student.error;
                 reset = false;
                 continue;
