@@ -140,7 +140,9 @@ struct User {
 
                 for (auto& it : Student.grades_json[0]["terms"].items()) { //  Add each course's ID into a list to access each class via an index 
                     if (it.value()["termName"] == Student.term) { //  Only add classes for current term
-                        Student.courses.push_back(it.value()["courses"][0]["sectionID"]);
+                        for (auto& it : it.value()["courses"].items()) {
+                            Student.courses.push_back(it.value()["sectionID"]);
+                        }
                     }
                 }
 
