@@ -1,15 +1,19 @@
 {
   "user": {
-    "exampleProfile1": {
-      "login_method": "json_file",
-      "grades_json": "grades.json",
-      "student_json": "students.json"
+    "json-user": {
+      "login_method": "json"
     },
-    "exampleProfile2": {
+    "microsoft-user": {
       "login_method": "microsoft",
       "campus_url": "https://your-infinitecampus-url.org",
       "login_path": "/path/to/saml/post",
       "saml": "SAMLResponse"
+    },
+    "username-user": {
+      "login_method": "username",
+      "campus_url": "https://your-infinitecampus-url.org",
+      "username": "your-username",
+      "password": "your-password"
     }
   }
 }
