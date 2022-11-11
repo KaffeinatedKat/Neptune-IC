@@ -43,22 +43,17 @@ struct UI {
         std::string section;
         std::string input;
         std::string msg = "";
-        cpr::Session session;
+        std::stringstream temp;
         json course_json;
 
-        std::stringstream temp;
-        temp << sectionID; //  to_string is a royal shithead, and stringstream is my solution, not the best solution but hey it works doesnt it
+        temp << sectionID;
 
+        
         if (Student.login_method == "json_file") {
             std::ifstream g("../userJson/" + Student.profile_name + "_" + temp.str() + ".json");
             course_json = json::parse(g);
         } else if (Student.login_method == "microsoft" || Student.login_method == "username") {
-            session.SetUrl(cpr::Url{Student.login_url}); //  Login to IC
-            session.SetParameters(Student.parameters);
-            cpr::Response r = session.Post();
-            session.SetUrl(cpr::Url{Student.url + "/campus/resources/portal/grades/detail/" + std::to_string(sectionID)}); //  Request class json via section_id
-            cpr::Response c = session.Get();
-            course_json = json::parse(c.text);
+            course_json = Student.classJsons[sectionID];
         }
 
         while (true) {

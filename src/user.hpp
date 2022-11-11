@@ -2,6 +2,8 @@
 #include <cpr/redirect.h>
 #include <cpr/response.h>
 #include <cpr/session.h>
+#include <sstream>
+#include <map>
 #include <stdexcept>
 #include <string>
 #include <fstream>
@@ -36,6 +38,7 @@ struct User {
     int unreadNotifs = 0;
     std::list<int> courses;
     std::list<std::string> term_list;
+    std::map<int, json> classJsons;
 
     std::string getDate() {
         std::time_t t = std::time(nullptr);
@@ -66,6 +69,7 @@ struct User {
                 
                 g.close();
                 s.close();
+                Student.first_name = Student.student_json[0]["firstName"];
                 Student.logged_in = true;
             } else if (Student.login_method == "username") {
                 cpr::Session session;
@@ -101,7 +105,12 @@ struct User {
             
             if (Student.fetch) {
                 cpr::Session session;
+                std::stringstream temp;
                 Student.fetch = false;
+                
+                std::string current_date = getDate(); //  Get current date
+                Student.term_list.clear(); //  Clear terms and courses to prevent overlapping when logging out and back in
+                Student.courses.clear();
 
                 //  Login to infinite campus and GET reuest all URL's to get nessisary data
                 session.SetUrl(cpr::Url{Student.login_url});
@@ -119,20 +128,13 @@ struct User {
                 session.SetHeader(cpr::Header{{"Accept", "application/json"}});
                 cpr::Response u = session.Get();
 
+                
                 //  Set all variables for json's and such after GET requesting all the URL's
                 Student.grades_json = json::parse(g.text); 
                 Student.student_json = json::parse(s.text);
                 Student.notifs_json = json::parse(n.text);
                 Student.unreadNotifs = std::stoi(std::string(json::parse(u.text)["data"]["RecentNotifications"]["count"]));
-                Student.logged_in = true;
 
-            }
-
-            if (Student.logged_in) {
-                std::string current_date = getDate(); //  Get current date
-                Student.term_list.clear(); //  Clear terms and courses to prevent overlapping when logging out and back in
-                Student.courses.clear();
-                
                 for (auto& it : Student.grades_json[0]["terms"].items()) { //  Loop through each term and compare dates to current
                     if (current_date > it.value()["startDate"] && current_date < it.value()["endDate"]) { //  If current date is between a terms start and end dates, that is the current term
                         Student.term = it.value()["termName"];
@@ -143,13 +145,23 @@ struct User {
                 for (auto& it : Student.grades_json[0]["terms"].items()) { //  Add each course's ID into a list to access each class via an index 
                     if (it.value()["termName"] == Student.term) { //  Only add classes for current term
                         for (auto& it : it.value()["courses"].items()) {
+                            temp.str(""); //  Reset stringstream object
+                            temp.clear();
+
                             Student.courses.push_back(it.value()["sectionID"]);
+                            temp << it.value()["sectionID"]; //  tl;dr to_string is a royal shithead
+                            session.SetUrl(cpr::Url{Student.url + "/campus/resources/portal/grades/detail/" + temp.str()}); //  Request class json via section_id
+                            cpr::Response c = session.Get();
+                            Student.classJsons[it.value()["sectionID"]] = json::parse(c.text);
                         }
                     }
                 }
 
                 Student.first_name = Student.student_json[0]["firstName"];
+                Student.logged_in = true;
+
             }
+
         } catch (nlohmann::detail::type_error) { //  Lazy catch, general catchall for errors, present "no profile" error
             Student.error = Error.userNotFound(Student.profile_name);
             Student.logged_in = false;
