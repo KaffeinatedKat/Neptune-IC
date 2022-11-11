@@ -1,9 +1,7 @@
 {
     "user": {
         "James": {
-            "login_method": "json_file",
-            "grades_json": "grades.json",
-            "student_json": "students.json"
+            "login_method": "json",
         }
     }
 }
