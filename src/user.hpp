@@ -112,7 +112,7 @@ struct User {
                 Student.term_list.clear(); //  Clear terms and courses to prevent overlapping when logging out and back in
                 Student.courses.clear();
 
-                //  Login to infinite campus and GET reuest all URL's to get nessisary data
+                //  Login to infinite campus and GET reuest all URL's to get nessisary json files
                 session.SetUrl(cpr::Url{Student.login_url});
                 session.SetParameters(Student.parameters);
                 cpr::Response r = session.Post();       
@@ -145,7 +145,7 @@ struct User {
                 for (auto& it : Student.grades_json[0]["terms"].items()) { //  Add each course's ID into a list to access each class via an index 
                     if (it.value()["termName"] == Student.term) { //  Only add classes for current term
                         for (auto& it : it.value()["courses"].items()) {
-                            temp.str(""); //  Reset stringstream object
+                            temp.str(""); //  Reset stringstream object to prevent overlapping
                             temp.clear();
 
                             Student.courses.push_back(it.value()["sectionID"]);

@@ -49,10 +49,10 @@ struct UI {
         temp << sectionID;
 
         
-        if (Student.login_method == "json_file") {
+        if (Student.login_method == "json_file") { //  Load class json
             std::ifstream g("../userJson/" + Student.profile_name + "_" + temp.str() + ".json");
             course_json = json::parse(g);
-        } else if (Student.login_method == "microsoft" || Student.login_method == "username") {
+        } else if (Student.login_method == "microsoft" || Student.login_method == "username") { //  Get class json from map by sectionID
             course_json = Student.classJsons[sectionID];
         }
 
@@ -71,20 +71,20 @@ struct UI {
                     
                     if (index == n - 1) { //  If user input index == category index
                         printf(" >>\n");
-                        expandCategory(Student, it.value(), Settings); //  Expand the category and print all its assignments
+                        expandCategory(Student, it.value(), Settings); //  Expand the category by printing all of its assignments
                     } else {
                         printf("\n");
                     }
-                } catch (nlohmann::detail::type_error) { //  Jank lmao, if there's a type error do nothing. Empty categories cause issues otherwise
+                } catch (nlohmann::detail::type_error) { //  Lazy catch, if there's a type error do nothing. Empty categories cause issues otherwise
                     ;
                 }
 
             }
-            printf("\n%s\n", msg.c_str());
+            printf("\n%s\n", msg.c_str()); //  Info message slot
             std::string command[4];
             userInput(command, Student.first_name);
-            if (command[0] == "b") { break; };
-            try {
+            if (command[0] == "b") { break; }; //  Decend to allClassesMenu if input is 'b'
+            try { //  If not, convert input to an int to expand that category on next loop
                 index = std::stoi(command[0]);
             } catch (std::invalid_argument) {
                 msg = "Input must be a number (or b)";
@@ -97,7 +97,7 @@ struct UI {
         while (true) {
             int i = 0;
             newScreen("Student Overview");
-            printf("[T]: %s  [N]: %d\n\n", Student.term.c_str(), Student.unreadNotifs); //  Print unread notification count
+            printf("[T]: %s  [N]: %d\n\n", Student.term.c_str(), Student.unreadNotifs); //  Print unread notification count and term
 
             for (auto& it : student_info[0]["terms"][0]["courses"].items()) { //  Print each class
                 try {
@@ -315,7 +315,7 @@ struct UI {
         Profiles.load(Profiles);
         message = "All profiles:\n\n";
 
-        for (auto& it : Profiles.profile_json["user"].items()) {
+        for (auto& it : Profiles.profile_json["user"].items()) { //  Loop through 'user', print each key value (aka the profile names)
             message.append(it.key() + " [" + std::string(it.value()["login_method"]) + "]\n");
         }
         message.append("\n");
