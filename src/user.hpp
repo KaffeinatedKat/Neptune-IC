@@ -111,6 +111,7 @@ struct User {
                 std::string current_date = getDate(); //  Get current date
                 Student.term_list.clear(); //  Clear terms and courses to prevent overlapping when logging out and back in
                 Student.courses.clear();
+                Student.classJsons.clear();
 
                 //  Login to infinite campus and GET reuest all URL's to get nessisary json files
                 session.SetUrl(cpr::Url{Student.login_url});
@@ -134,9 +135,9 @@ struct User {
                 Student.student_json = json::parse(s.text);
                 Student.notifs_json = json::parse(n.text);
                 Student.unreadNotifs = std::stoi(std::string(json::parse(u.text)["data"]["RecentNotifications"]["count"]));
-
+                
                 for (auto& it : Student.grades_json[0]["terms"].items()) { //  Loop through each term and compare dates to current
-                    if (current_date > it.value()["startDate"] && current_date < it.value()["endDate"]) { //  If current date is between a terms start and end dates, that is the current term
+                    if (Student.term == "current" && current_date > it.value()["startDate"] && current_date < it.value()["endDate"]) { //  If current date is between a terms start and end dates, that is the current term
                         Student.term = it.value()["termName"];
                     }
                     Student.term_list.push_back(std::string(it.value()["termName"]));

@@ -98,15 +98,22 @@ struct UI {
             int i = 0;
             newScreen("Student Overview");
             printf("[T]: %s  [N]: %d\n\n", Student.term.c_str(), Student.unreadNotifs); //  Print unread notification count and term
-
-            for (auto& it : student_info[0]["terms"][0]["courses"].items()) { //  Print each class
-                try {
-                    //  (Grade) "Class Name"
-                    printf("[%d] %s[%s] (%.2f%%) %s %s\n", i++, Settings.gradeColor(Settings, it.value()["gradingTasks"][0]["progressScore"]).c_str(), std::string(it.value()["gradingTasks"][0]["progressScore"]).c_str(), float(it.value()["gradingTasks"][0]["progressPercent"]), std::string(it.value()["courseName"]).c_str(), Settings.color_reset.c_str());
-                } catch (nlohmann::detail::type_error) { //  Yet another shitty catch, classes with no grades cause issues
-                    continue;
+            
+            for (auto& ids : Student.courses) {
+                for (auto& it : Student.grades_json[0]["terms"].items()) {
+                    for (auto& it : it.value()["courses"].items()) {
+                        if (it.value()["sectionID"] == ids) {
+                            try {
+                                //  (Grade) "Class Name"
+                                printf("[%d] %s[%s] (%.2f%%) %s %s\n", i++, Settings.gradeColor(Settings, it.value()["gradingTasks"][0]["progressScore"]).c_str(), std::string(it.value()["gradingTasks"][0]["progressScore"]).c_str(), float(it.value()["gradingTasks"][0]["progressPercent"]), std::string(it.value()["courseName"]).c_str(), Settings.color_reset.c_str());
+                            } catch (nlohmann::detail::type_error) { //  Yet another shitty catch, classes with no grades cause issues
+                                continue;
+                            }
+                        }
+                    }
                 }
             }
+
 
             printf("\n%s\n", msg.c_str());
             std::string command[4];
@@ -125,15 +132,17 @@ struct UI {
                     for (auto& it : Student.term_list) {
                         msg.append("'" + std::string(it) + "' ");
                     }
-                } else if (command[1] == "set") { //  TODO: Make this actually update the term when fetching stuff
+                } else if (command[1] == "set") { //  Change term
                     bool set = false;
-                    for (auto& it : Student.term_list) {
+                    for (auto& it : Student.term_list) { //  If selected term is a valid term, set it and re-login
                         if (command[2] == std::string(it)) { 
                             Student.term = command[2];
+                            Student.login(Student, Error);
                             set = true;
+                            break;
                         }
                     }
-                    if (!set) { msg = "Invalid term"; }
+                    if (!set) { msg = "Invalid term"; } //  If not, throw "invalid term"
                 }
             } else {
                 auto index = Student.courses.begin(); //  'Random access' for the class vector
