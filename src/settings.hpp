@@ -41,7 +41,7 @@ struct Options {
             json colors = Settings.settings_json[0]["colored-text"];
             auto it = colors["grade-colors"].find(grade);
             
-            if (it == colors["grade-colors"].end()) { return ""; }
+            if (it == colors["grade-colors"].end() || colors["enabled"] == false) { return ""; }
 
             return "\033[" + std::string(it.value()) + "m";
     }
