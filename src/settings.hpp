@@ -39,13 +39,10 @@ struct Options {
     
     std::string gradeColor(Options Settings, std::string grade) {  //  Return color code from grade in color settings, if no match return nothing
             json colors = Settings.settings_json[0]["colored-text"];
+            auto it = colors["grade-colors"].find(grade);
+            
+            if (it == colors["grade-colors"].end()) { return ""; }
 
-            if (Settings.colors == false) { return ""; } //  If color settings disabled, return no color esacpe code
-
-            for (auto& it : colors["grade-colors"].items()) {
-                if (grade == it.key()) { return "\033[" + std::string(it.value()) + "m"; }
-            }
-
-            return ""; //  Return nothing if no matches
+            return "\033[" + std::string(it.value()) + "m";
     }
 };
