@@ -2,4 +2,6 @@ build*
 CMakeLists.txt
 CMakeFiles*
 _deps*
-profiles.json
+profile*
+.vscode
+.cache
