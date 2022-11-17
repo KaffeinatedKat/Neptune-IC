@@ -57,29 +57,30 @@ struct UI {
         }
 
         while (true) {
+            auto points = Student.classItems[std::make_pair(sectionID, "catScores")].begin();
+            auto grades = Student.classItems[std::make_pair(sectionID, "catGrades")].begin();
             newScreen("Class Overview");
             n = 0;
 
             //  "ClassName" ["Grade"] (Percentage)
-            printf("\n%s%s [%s] (%.2f%%)%s\n", Settings.gradeColor(Settings, course_json["details"][0]["task"]["progressScore"]).c_str(), std::string(course_json["details"][0]["task"]["courseName"]).c_str(), std::string(course_json["details"][0]["task"]["progressScore"]).c_str(), float(course_json["details"][0]["task"]["progressPercent"]), Settings.color_reset.c_str());
+            printf("\n%s%s [%s] (%s%%) %s\n", Settings.gradeColor(Settings, Student.classInfo[std::make_pair(sectionID, "classGrade")]).c_str(), Student.classInfo[std::make_pair(sectionID, "className")].c_str(), Student.classInfo[std::make_pair(sectionID, "classGrade")].c_str(), Student.classInfo[std::make_pair(sectionID, "classPercent")].c_str(), Settings.color_reset.c_str());
 
-            //  Print each grade category
-            for (auto& it : course_json["details"][0]["categories"].items()) {
-                try {
-                    //   "Category Name" [earned/total points] (Percentage)
-                    printf("\t[%d]%s %s [%.2f/%.2f] (%.2f%%)%s", n++, Settings.gradeColor(Settings, it.value()["progress"]["progressScore"]).c_str(), std::string(it.value()["name"]).c_str(), float(it.value()["progress"]["progressPointsEarned"]), float(it.value()["progress"]["progressTotalPoints"]), float(it.value()["progress"]["progressPercent"]), Settings.color_reset.c_str());
-                    
-                    if (index == n - 1) { //  If user input index == category index
-                        printf(" >>\n");
-                        expandCategory(Student, it.value(), Settings); //  Expand the category by printing all of its assignments
-                    } else {
-                        printf("\n");
-                    }
-                } catch (nlohmann::detail::type_error) { //  Lazy catch, if there's a type error do nothing. Empty categories cause issues otherwise
-                    ;
-                }
 
+            for (auto& it : Student.classItems[std::make_pair(sectionID, "catNames")]) {
+                //  Category Name [Points]
+                printf("\t[%d]%s %s [%s]%s", n++, Settings.gradeColor(Settings, std::string(*grades)).c_str(), it.c_str(), std::string(*points).c_str(), Settings.color_reset.c_str());
+                
+                if (index == n - 1) { //  If user input index == category index
+                    printf(" >>\n");
+                    expandCategory(Student, sectionID, it, Settings); //  Expand the category by printing all of its assignments
+                } else {
+                    printf("\n");
+                } 
+                
+                std::advance(points, 1);
+                std::advance(grades, 1);
             }
+
             printf("\n%s\n", msg.c_str()); //  Info message slot
             std::string command[4];
             userInput(command, Student.first_name);
@@ -100,18 +101,8 @@ struct UI {
             printf("[T]: %s  [N]: %d\n\n", Student.term.c_str(), Student.unreadNotifs); //  Print unread notification count and term
             
             for (auto& ids : Student.courses) {
-                for (auto& it : Student.grades_json[0]["terms"].items()) {
-                    for (auto& it : it.value()["courses"].items()) {
-                        if (it.value()["sectionID"] == ids) {
-                            try {
-                                //  (Grade) "Class Name"
-                                printf("[%d] %s[%s] (%.2f%%) %s %s\n", i++, Settings.gradeColor(Settings, it.value()["gradingTasks"][0]["progressScore"]).c_str(), std::string(it.value()["gradingTasks"][0]["progressScore"]).c_str(), float(it.value()["gradingTasks"][0]["progressPercent"]), std::string(it.value()["courseName"]).c_str(), Settings.color_reset.c_str());
-                            } catch (nlohmann::detail::type_error) { //  Yet another shitty catch, classes with no grades cause issues
-                                continue;
-                            }
-                        }
-                    }
-                }
+                //  (Grade) "Class Name"
+                printf("[%d] %s[%s] (%s%%) %s %s\n", i++, Settings.gradeColor(Settings, Student.classInfo[std::make_pair(ids, "classGrade")]).c_str(), Student.classInfo[std::make_pair(ids, "classGrade")].c_str(), Student.classInfo[std::make_pair(ids, "classPercent")].c_str(), Student.classInfo[std::make_pair(ids, "className")].c_str(), Settings.color_reset.c_str());
             }
 
 
@@ -158,17 +149,14 @@ struct UI {
         }
     };
 
-    void expandCategory(User Student, json course_json, Options Settings) {
+    void expandCategory(User Student, int sectionID, std::string catName, Options Settings) {
         std::string missing;
-        for (auto& it : course_json["assignments"].items()) {
-            missing = "    ";
-            try {
-                if (it.value()["missing"]) { missing = Settings.missing_color + "[M] " + Settings.color_reset; } //  Oooh fancy colors
-                //  "Assignment Name" [earned/total points]
-                printf("\t\t%s%s %3s%.2f/%.2f]\n", missing.c_str(), std::string(it.value()["assignmentName"]).c_str(), std::string("[").c_str(), std::stof(it.value()["scorePoints"].get<std::string>()), it.value()["totalPoints"].get<double>());
-            } catch (nlohmann::detail::type_error) { //  Again with the jank, ungraded assignments also cause issues
-                continue;
-            }
+        auto scores = Student.classItems[std::make_pair(sectionID, catName + "scores")].begin();
+
+        for (auto& it : Student.classItems[std::make_pair(sectionID, catName + "names")]) {
+            printf("\t\t%s [%s]\n", it.c_str(), std::string(*scores).c_str());
+            
+            std::advance(scores, 1);
         }
     }
 
