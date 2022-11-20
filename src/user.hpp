@@ -233,7 +233,7 @@ struct User {
 
                 Student.classJsons.clear(); //  Free the memory taken up by the already parsed json files
                 Student.grades_json.clear();
-                Student.student_json.clear()
+                Student.student_json.clear();
 
                 Student.first_name = Student.student_json[0]["firstName"];
                 Student.logged_in = true;
