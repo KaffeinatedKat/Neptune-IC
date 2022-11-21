@@ -149,6 +149,8 @@ struct User {
                 Student.notifs_json = json::parse(n.text);
                 Student.unreadNotifs = std::stoi(std::string(json::parse(u.text)["data"]["RecentNotifications"]["count"]));
                 
+                Student.first_name = Student.student_json[0]["firstName"];
+
                 for (auto& it : Student.grades_json[0]["terms"].items()) { //  Loop through each term and compare dates to current
                     if (Student.term == "current" && current_date > it.value()["startDate"] && current_date < it.value()["endDate"]) { //  If current date is between a terms start and end dates, that is the current term
                         Student.term = it.value()["termName"];
@@ -235,7 +237,6 @@ struct User {
                 Student.grades_json.clear();
                 Student.student_json.clear();
 
-                Student.first_name = Student.student_json[0]["firstName"];
                 Student.logged_in = true;
 
             }
