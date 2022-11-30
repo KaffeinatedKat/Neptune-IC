@@ -49,12 +49,7 @@ struct UI {
         temp << sectionID;
 
         
-        if (Student.login_method == "json_file") { //  Load class json
-            std::ifstream g("../userJson/" + Student.profile_name + "_" + temp.str() + ".json");
-            course_json = json::parse(g);
-        } else if (Student.login_method == "microsoft" || Student.login_method == "username") { //  Get class json from map by sectionID
-            course_json = Student.classJsons[sectionID];
-        }
+        course_json = Student.classJsons[sectionID];
 
         while (true) {
             auto points = Student.classItems[std::make_pair(sectionID, "catScores")].begin();

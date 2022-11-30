@@ -64,7 +64,7 @@ A profile with username login:
 }
 ```
 
-## JSON "Login" (Currently brocken)
+## JSON "Login" 
 #### Neptune-IC parses the JSON responces from the Infinite Campus servers, so what I call JSON Login is supported
 
 If you place JSON files from Infinite Campus in the `userJson/` directory of Neptune-IC, the program can parse those instead of logging you in and fetching them from the Infinite Campus servers. These JSON responces can be harvested with inspect element

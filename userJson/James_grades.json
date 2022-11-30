@@ -3,6 +3,9 @@
    "enrollmentID":23324,
    "terms": [
       {
+        "termName": "S1",
+        "endDate": "2022-12-12",
+        "startDate": "2022-11-29",
         "courses": [
           {
             "courseName": "Maths",
@@ -13,7 +16,7 @@
               }
             ]
          },
-          {
+         {
             "courseName": "Science",
             "sectionID": 124,
             "gradingTasks": [

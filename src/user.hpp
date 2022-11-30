@@ -2,6 +2,7 @@
 #include <cpr/redirect.h>
 #include <cpr/response.h>
 #include <cpr/session.h>
+#include <nlohmann/detail/exceptions.hpp>
 #include <sstream>
 #include <map>
 #include <stdexcept>
@@ -71,7 +72,6 @@ struct User {
                 
                 g.close();
                 s.close();
-                Student.first_name = Student.student_json[0]["firstName"];
                 Student.logged_in = true;
             } else if (Student.login_method == "username") {
                 cpr::Session session;
@@ -105,27 +105,10 @@ struct User {
                 Student.fetch = true;
             }
             
-            if (Student.fetch) {
-                cpr::Session session;
-                std::stringstream temp;
-                Student.fetch = false;
-                std::string className;
-                std::string classGrade;
-                std::string classPercent;
-                std::list<std::string> assignmentsList;
-                std::string catName;
-                std::string catPercent;
-                std::string catGrade;
-                std::string assignmentName;
-                std::string missing;
-                
-                std::string current_date = getDate(); //  Get current date
-                Student.term_list.clear(); //  Clear terms and courses to prevent overlapping when logging out and back in
-                Student.courses.clear();
-                Student.classJsons.clear();
-                Student.classInfo.clear();
-                Student.classItems.clear();
 
+            cpr::Session session;
+            
+            if (Student.fetch) { //  Fetch files from online (microsoft/username)
                 //  Login to infinite campus and GET reuest all URL's to get nessisary json files
                 session.SetUrl(cpr::Url{Student.login_url});
                 session.SetParameters(Student.parameters);
@@ -142,104 +125,137 @@ struct User {
                 session.SetHeader(cpr::Header{{"Accept", "application/json"}});
                 cpr::Response u = session.Get();
 
-                
                 //  Set all variables for json's and such after GET requesting all the URL's
                 Student.grades_json = json::parse(g.text); 
                 Student.student_json = json::parse(s.text);
                 Student.notifs_json = json::parse(n.text);
                 Student.unreadNotifs = std::stoi(std::string(json::parse(u.text)["data"]["RecentNotifications"]["count"]));
                 
-                Student.first_name = Student.student_json[0]["firstName"];
 
-                for (auto& it : Student.grades_json[0]["terms"].items()) { //  Loop through each term and compare dates to current
-                    if (Student.term == "current" && current_date > it.value()["startDate"] && current_date < it.value()["endDate"]) { //  If current date is between a terms start and end dates, that is the current term
-                        Student.term = it.value()["termName"];
-                    }
-                    Student.term_list.push_back(std::string(it.value()["termName"]));
+            }
+
+
+            std::stringstream temp;
+            std::string studentName;
+            std::string className = "=--="; //  A random 
+            std::string classGrade;
+            std::string classPercent;
+            std::list<std::string> assignmentsList;
+            std::string catName;
+            std::string catPercent;
+            std::string catGrade;
+            std::string assignmentName;
+            std::string missing;
+            
+            std::string current_date = getDate(); //  Get current date
+            Student.term_list.clear(); //  Clear terms and courses to prevent overlapping when logging out and back in
+            Student.courses.clear();
+            Student.classJsons.clear();
+            Student.classInfo.clear();
+            Student.classItems.clear();
+
+                                
+            Student.first_name = Student.student_json[0]["firstName"];
+
+            for (auto& it : Student.grades_json[0]["terms"].items()) { //  Loop through each term and compare dates to current
+                if (Student.term == "current" && current_date > it.value()["startDate"] && current_date < it.value()["endDate"]) { //  If current date is between a terms start and end dates, that is the current term
+                    Student.term = it.value()["termName"];
                 }
+                Student.term_list.push_back(std::string(it.value()["termName"]));
+            }
 
-                for (auto& it : Student.grades_json[0]["terms"].items()) { //  Add each course's ID into a list to access each class via an index 
-                    if (it.value()["termName"] == Student.term) { //  Only add classes for current term
-                        for (auto& it : it.value()["courses"].items()) {
-                            temp.str(""); //  Reset stringstream object to prevent overlapping
-                            temp.clear();
+            for (auto& it : Student.grades_json[0]["terms"].items()) { //  Add each course's ID into a list to access each class via an index 
+                if (it.value()["termName"] == Student.term) { //  Only add classes for current term
+                    for (auto& it : it.value()["courses"].items()) {
+                        temp.str(""); //  Reset stringstream object to prevent overlapping
+                        temp.clear();
 
-                            Student.courses.push_back(it.value()["sectionID"]);
-                            temp << it.value()["sectionID"]; //  tl;dr to_string is a royal shithead
+                        Student.courses.push_back(it.value()["sectionID"]);
+                        temp << it.value()["sectionID"]; //  tl;dr to_string is a royal shithead
+                        
+                        if (Student.fetch) {
                             session.SetUrl(cpr::Url{Student.url + "/campus/resources/portal/grades/detail/" + temp.str()}); //  Request class json via section_id
                             cpr::Response c = session.Get();
                             Student.classJsons[it.value()["sectionID"]] = json::parse(c.text);
+                        } else {
+                            std::ifstream f("../userJson/" + Student.first_name + "_" + temp.str() + ".json");
+
+                            if (f.is_open()) {
+                                Student.classJsons[it.value()["sectionID"]] = json::parse(f);
+                            }
+                        }
+                    }
+                }
+            }
+
+            for (auto& ids : Student.courses) {
+                for (auto& it : Student.grades_json[0]["terms"].items()) {
+                    for (auto& it : it.value()["courses"].items()) {
+                        if (it.value()["sectionID"] == ids) {
+                            temp.str(""); //  Reset stringstream object to prevent overlapping
+                            temp.clear();
+                            className = "Class name not found";
+                            classGrade = " ";
+
+                            if (!(it.value()["courseName"] == nullptr)) {
+                                className = it.value()["courseName"];
+                            }
+                            if (!(it.value()["gradingTasks"][0]["progressScore"] == nullptr)) {
+                                classGrade = it.value()["gradingTasks"][0]["progressScore"];
+                            }
+
+                            Student.classInfo[std::make_pair(ids, "className")] = className;
+                            Student.classInfo[std::make_pair(ids, "classGrade")] = classGrade; 
+                            temp << it.value()["gradingTasks"][0]["progressPercent"];
+                            Student.classInfo[std::make_pair(ids, "classPercent")] = temp.str();
                         }
                     }
                 }
 
-                for (auto& ids : Student.courses) {
-                    for (auto& it : Student.grades_json[0]["terms"].items()) {
-                        for (auto& it : it.value()["courses"].items()) {
-                            if (it.value()["sectionID"] == ids) {
-                                temp.str(""); //  Reset stringstream object to prevent overlapping
-                                temp.clear();
-                                className = "Class name not found";
-                                classGrade = " ";
+                for (auto& it : Student.classJsons[ids]["details"][0]["categories"].items()) {
+                    temp.str("");
+                    temp.clear();
+                    catName = "Category name not found";
+                    catGrade = " ";
 
-                                if (!(it.value()["courseName"] == nullptr)) {
-                                    className = it.value()["courseName"];
-                                }
-                                if (!(it.value()["gradingTasks"][0]["progressScore"] == nullptr)) {
-                                    classGrade = it.value()["gradingTasks"][0]["progressScore"];
-                                }
-
-                                Student.classInfo[std::make_pair(ids, "className")] = className;
-                                Student.classInfo[std::make_pair(ids, "classGrade")] = classGrade; 
-                                temp << it.value()["gradingTasks"][0]["progressPercent"];
-                                Student.classInfo[std::make_pair(ids, "classPercent")] = temp.str();
-                            }
-                        }
+                    if (!(it.value()["name"] == nullptr)) {
+                        catName = it.value()["name"];
                     }
-                    for (auto& it : Student.classJsons[ids]["details"][0]["categories"].items()) {
+                    if (!(it.value()["progress"]["progressScore"] == nullptr)) {
+                        catGrade = it.value()["progress"]["progressScore"];
+                    }
+                        
+                    temp << it.value()["progress"]["progressPointsEarned"] << "/" << it.value()["progress"]["progressTotalPoints"];
+
+                    classItems[std::make_pair(ids, "catScores")].push_back(temp.str());
+                    classItems[std::make_pair(ids, "catNames")].push_back(catName);
+                    classItems[std::make_pair(ids, "catGrades")].push_back(catGrade);
+
+                    for (auto& it : it.value()["assignments"].items()) {
                         temp.str("");
                         temp.clear();
-                        catName = "Category name not found";
-                        catGrade = " ";
+                        assignmentName = "Assignment name not found";
+                        missing = false;
 
-                        if (!(it.value()["name"] == nullptr)) {
-                            catName = it.value()["name"];
+                        if (!(it.value()["assignmentName"] == nullptr)) {
+                            assignmentName = it.value()["assignmentName"];
                         }
-                        if (!(it.value()["progress"]["progressScore"] == nullptr)) {
-                            catGrade = it.value()["progress"]["progressScore"];
-                        }
-                            
-                        temp << it.value()["progress"]["progressPointsEarned"] << "/" << it.value()["progress"]["progressTotalPoints"];
 
-                        classItems[std::make_pair(ids, "catScores")].push_back(temp.str());
-                        classItems[std::make_pair(ids, "catNames")].push_back(catName);
-                        classItems[std::make_pair(ids, "catGrades")].push_back(catGrade);
+                        temp << it.value()["scorePoints"] << "/" << it.value()["totalPoints"];
 
-                        for (auto& it : it.value()["assignments"].items()) {
-                            temp.str("");
-                            temp.clear();
-                            assignmentName = "Assignment name not found";
-                            missing = false;
-
-                            if (!(it.value()["assignmentName"] == nullptr)) {
-                                assignmentName = it.value()["assignmentName"];
-                            }
-
-                            temp << it.value()["scorePoints"] << "/" << it.value()["totalPoints"];
-
-                            classItems[std::make_pair(ids, catName + "names")].push_back(assignmentName);
-                            classItems[std::make_pair(ids, catName + "scores")].push_back(temp.str());
-                        }
+                        classItems[std::make_pair(ids, catName + "names")].push_back(assignmentName);
+                        classItems[std::make_pair(ids, catName + "scores")].push_back(temp.str());
                     }
                 }
-
-                Student.classJsons.clear(); //  Free the memory taken up by the already parsed json files
-                Student.grades_json.clear();
-                Student.student_json.clear();
-
-                Student.logged_in = true;
-
             }
+
+            Student.classJsons.clear(); //  Free the memory taken up by the already parsed json files
+            Student.grades_json.clear();
+            Student.student_json.clear();
+
+            Student.logged_in = true;
+            Student.fetch = false;
+
 
         } catch (nlohmann::detail::type_error) { //  Lazy catch, general catchall for errors, present "no profile" error
             Student.error = Error.userNotFound(Student.profile_name);
