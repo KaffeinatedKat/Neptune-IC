@@ -15,6 +15,6 @@ struct Exceptions {
     }
 
     std::string invalidJson(std::string missingValue) {
-        return "Json files appear to be invalid, value '" + missingValue + "' not found\n";
+        return "Json files appear to be invalid, value(s) '" + missingValue + "' do not exist\n";
     }
 };

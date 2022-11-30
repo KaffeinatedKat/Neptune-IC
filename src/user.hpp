@@ -156,7 +156,7 @@ struct User {
             Student.classItems.clear();
 
 
-            if (!(Student.student_json[0]["firstName"] == nullptr)) {
+            if (!(Student.student_json[0]["firstName"] == nullptr)) { //  Check for students name, error if it does not exist
                 Student.first_name = Student.student_json[0]["firstName"];
             } else {
                 Student.error = Error.invalidJson("firstName");
@@ -164,12 +164,28 @@ struct User {
                 return Student;
             }
 
+
+
             for (auto& it : Student.grades_json[0]["terms"].items()) { //  Loop through each term and compare dates to current
                 if (Student.term == "current" && current_date > it.value()["startDate"] && current_date < it.value()["endDate"]) { //  If current date is between a terms start and end dates, that is the current term
                     Student.term = it.value()["termName"];
                 }
-                Student.term_list.push_back(std::string(it.value()["termName"]));
+
+                if (!(it.value()["termName"] == nullptr)) {
+                    Student.term_list.push_back(std::string(it.value()["termName"])); //  Add each term to the term list
+                }
             }
+
+            if (Student.term == "current") { //  If term was not set above (json contains no terms within current date), auto set to the first term in the list
+                if (Student.term_list.size() == 0) { //  If term list is empty, return error
+                    Student.error = Error.invalidJson("terms");
+                    Student.logged_in = false;
+                    return Student;
+                }
+                Student.term = Student.term_list.front();
+            }
+
+
 
             for (auto& it : Student.grades_json[0]["terms"].items()) { //  Add each course's ID into a list to access each class via an index 
                 if (it.value()["termName"] == Student.term) { //  Only add classes for current term
@@ -195,6 +211,8 @@ struct User {
                 }
             }
 
+
+
             for (auto& ids : Student.courses) {
                 for (auto& it : Student.grades_json[0]["terms"].items()) {
                     for (auto& it : it.value()["courses"].items()) {
@@ -218,6 +236,8 @@ struct User {
                         }
                     }
                 }
+
+
 
                 for (auto& it : Student.classJsons[ids]["details"][0]["categories"].items()) {
                     temp.str("");
