@@ -13,4 +13,8 @@ struct Exceptions {
     std::string noJson(std::string user) {
         return "Json files for profile '" + user + "' could not be found\n";
     }
+
+    std::string invalidJson(std::string missingValue) {
+        return "Json files appear to be invalid, value '" + missingValue + "' not found\n";
+    }
 };

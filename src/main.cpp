@@ -47,6 +47,7 @@ int main() {
             Student.login(Student, Error); //  Try logging into profile with specified name
             if (Student.logged_in != true) { //  Print error if login unsuccessful
                 msg = "\033[A\033[A\33[2K\r" + Student.error;
+                Student.first_name = "None";
                 reset = false;
                 continue;
             }

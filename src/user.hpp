@@ -137,7 +137,7 @@ struct User {
 
             std::stringstream temp;
             std::string studentName;
-            std::string className = "=--="; //  A random 
+            std::string className;
             std::string classGrade;
             std::string classPercent;
             std::list<std::string> assignmentsList;
@@ -148,14 +148,21 @@ struct User {
             std::string missing;
             
             std::string current_date = getDate(); //  Get current date
+            Student.first_name = "Name not found";
             Student.term_list.clear(); //  Clear terms and courses to prevent overlapping when logging out and back in
             Student.courses.clear();
             Student.classJsons.clear();
             Student.classInfo.clear();
             Student.classItems.clear();
 
-                                
-            Student.first_name = Student.student_json[0]["firstName"];
+
+            if (!(Student.student_json[0]["firstName"] == nullptr)) {
+                Student.first_name = Student.student_json[0]["firstName"];
+            } else {
+                Student.error = Error.invalidJson("firstName");
+                Student.logged_in = false;
+                return Student;
+            }
 
             for (auto& it : Student.grades_json[0]["terms"].items()) { //  Loop through each term and compare dates to current
                 if (Student.term == "current" && current_date > it.value()["startDate"] && current_date < it.value()["endDate"]) { //  If current date is between a terms start and end dates, that is the current term
