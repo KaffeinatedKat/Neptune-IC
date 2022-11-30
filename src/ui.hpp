@@ -160,7 +160,7 @@ struct UI {
         }
     }
 
-    void notifications(User Student, Options Settings) {
+    void notifications(User &Student, Options Settings) {
         cpr::Session session;
         int *showCount;
         std::string msg = "\n";
