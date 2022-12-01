@@ -144,6 +144,8 @@ struct User {
             std::string catName;
             std::string catPercent;
             std::string catGrade;
+            std::string catTotal;
+            std::string catEarn;
             std::string assignmentName;
             std::string missing;
             
@@ -159,7 +161,7 @@ struct User {
             if (!(Student.student_json[0]["firstName"] == nullptr)) { //  Check for students name, error if it does not exist
                 Student.first_name = Student.student_json[0]["firstName"];
             } else {
-                Student.error = Error.invalidJson("firstName");
+                Student.error = Error.invalidJson(Student.profile_name, "firstName");
                 Student.logged_in = false;
                 return Student;
             }
@@ -178,7 +180,7 @@ struct User {
 
             if (Student.term == "current") { //  If term was not set above (json contains no terms within current date), auto set to the first term in the list
                 if (Student.term_list.size() == 0) { //  If term list is empty, return error
-                    Student.error = Error.invalidJson("terms");
+                    Student.error = Error.invalidJson(Student.profile_name, "terms");
                     Student.logged_in = false;
                     return Student;
                 }
@@ -213,7 +215,7 @@ struct User {
 
 
 
-            for (auto& ids : Student.courses) {
+            for (auto& ids : Student.courses) { // Loop through each class and parse the class names and grades
                 for (auto& it : Student.grades_json[0]["terms"].items()) {
                     for (auto& it : it.value()["courses"].items()) {
                         if (it.value()["sectionID"] == ids) {
@@ -239,7 +241,7 @@ struct User {
 
 
 
-                for (auto& it : Student.classJsons[ids]["details"][0]["categories"].items()) {
+                for (auto& it : Student.classJsons[ids]["details"][0]["categories"].items()) { //  Loop through each class and get it's category names and grades
                     temp.str("");
                     temp.clear();
                     catName = "Category name not found";
@@ -258,20 +260,24 @@ struct User {
                     classItems[std::make_pair(ids, "catNames")].push_back(catName);
                     classItems[std::make_pair(ids, "catGrades")].push_back(catGrade);
 
-                    for (auto& it : it.value()["assignments"].items()) {
+                    for (auto& it : it.value()["assignments"].items()) { //  Loop through each category and get all of its assignments names and grades
                         temp.str("");
                         temp.clear();
                         assignmentName = "Assignment name not found";
+                        catEarn = "null";
                         missing = false;
 
                         if (!(it.value()["assignmentName"] == nullptr)) {
                             assignmentName = it.value()["assignmentName"];
                         }
+                        if (!(it.value()["scorePoints"] == nullptr)) {
+                            catEarn = it.value()["scorePoints"];
+                        }
 
-                        temp << it.value()["scorePoints"] << "/" << it.value()["totalPoints"];
+                        temp << it.value()["totalPoints"];
 
                         classItems[std::make_pair(ids, catName + "names")].push_back(assignmentName);
-                        classItems[std::make_pair(ids, catName + "scores")].push_back(temp.str());
+                        classItems[std::make_pair(ids, catName + "scores")].push_back(catEarn + "/" + temp.str());
                     }
                 }
             }
