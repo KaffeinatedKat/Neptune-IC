@@ -147,7 +147,7 @@ struct User {
             std::string catTotal;
             std::string catEarn;
             std::string assignmentName;
-            std::string missing;
+            bool missing;
             
             std::string current_date = getDate(); //  Get current date
             Student.first_name = "Name not found";
