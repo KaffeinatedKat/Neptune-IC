@@ -1,7 +1,9 @@
 # Neptune-IC
 An open source Infinite Campus client for the command line
 
-## Build & Run
+## Build & Run 
+
+### Linux
 ```bash
 git clone https://github.com/KaffeinatedKat/Neptune-IC
 cd Neptune-IC
@@ -9,6 +11,16 @@ mkdir build && cd build
 cmake ..
 make
 ./neptune
+```
+
+### Windows ([ninja](https://github.com/ninja-build/ninja))
+```bash
+git clone https://github.com/KaffeinatedKat/Neptune-IC
+cd Neptune-IC
+mkdir build && cd build
+cmake -G "Ninja" -DBUILD_FOR_WINDOWS=true ..
+ninja
+neptune.exe
 ```
 
 ## Profiles
