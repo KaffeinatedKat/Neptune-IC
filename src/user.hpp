@@ -265,7 +265,7 @@ struct User {
                         temp.clear();
                         assignmentName = "Assignment name not found";
                         catEarn = "null";
-                        missing = false;
+                        missing = "false";
 
                         if (!(it.value()["assignmentName"] == nullptr)) {
                             assignmentName = it.value()["assignmentName"];
@@ -273,11 +273,15 @@ struct User {
                         if (!(it.value()["scorePoints"] == nullptr)) {
                             catEarn = it.value()["scorePoints"];
                         }
+                        if (it.value()["missing"] == true) {
+                            missing = "true";
+                        }
 
                         temp << it.value()["totalPoints"];
 
                         classItems[std::make_pair(ids, catName + "names")].push_back(assignmentName);
                         classItems[std::make_pair(ids, catName + "scores")].push_back(catEarn + "/" + temp.str());
+                        classItems[std::make_pair(ids, catName + "missing")].push_back(missing);
                     }
                 }
             }

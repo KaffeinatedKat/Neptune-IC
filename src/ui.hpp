@@ -1,4 +1,5 @@
 #pragma once
+#include <any>
 #include <cpr/session.h>
 #include <cstdio>
 #include <nlohmann/detail/exceptions.hpp>
@@ -145,13 +146,20 @@ struct UI {
     };
 
     void expandCategory(User Student, int sectionID, std::string catName, Options Settings) {
-        std::string missing;
+        std::string missingTag;
+        auto missing = Student.classItems[std::make_pair(sectionID, catName + "missing")].begin();
         auto scores = Student.classItems[std::make_pair(sectionID, catName + "scores")].begin();
 
         for (auto& it : Student.classItems[std::make_pair(sectionID, catName + "names")]) {
-            printf("\t\t%s [%s]\n", it.c_str(), std::string(*scores).c_str());
+            missingTag = "    ";
+            if (*missing == "true") {
+                missingTag = Settings.missing_color + "[M] " + Settings.color_reset;
+            }
+            printf("\t\t%s%s [%s]\n", missingTag.c_str(), it.c_str(), std::string(*scores).c_str());
+        
             
             std::advance(scores, 1);
+            std::advance(missing, 1);
         }
     }
 
