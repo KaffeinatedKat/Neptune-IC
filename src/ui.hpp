@@ -15,7 +15,7 @@ using json = nlohmann::json;
 
 struct UI {
     void newScreen(std::string text) {
-        #ifdef WINDOWS
+        #ifdef _WIN32
             std::system("cls");
         #else
             // Assume POSIX
