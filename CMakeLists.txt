@@ -1,8 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
 
-if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-        set(BUILD_FOR_WIN TRUE)
-endif()
 option(STATIC_BUILD "Build a static binary." ${BUILD_FOR_WIN})
 
 if (STATIC_BUILD)
