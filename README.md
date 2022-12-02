@@ -18,7 +18,7 @@ make
 git clone https://github.com/KaffeinatedKat/Neptune-IC
 cd Neptune-IC
 mkdir build && cd build
-cmake -G "Ninja" -DBUILD_FOR_WINDOWS=true ..
+cmake -G "Ninja" -DBUILD_FOR_WIN=true ..
 ninja
 neptune.exe
 ```
@@ -34,11 +34,11 @@ Logging in with a profile is as simple as `login [profile_name]`
 
 # Supported login methods
 
-#### Currently only Student Login is supported at this time
-#### This has been tested with 2 school currently and it works identically for both, other schools should also work fine but there is no guarentees
+#### Currently only Student Login is supported
+#### This has been tested with 2 schools currently and it works identically for both, other schools should also work fine but there is no guarentees
 
 ## Microsoft login
-#### Microsoft login is "supported" (only tested with 1 school)
+#### Accounts that log in via Microsoft SSO are supported 
 
 Use the login method `microsoft` when creating a profile. It will ask for 3 fields:
 
@@ -58,7 +58,7 @@ A profile with microsoft login:
 ```
 
 ## Username/Password Login
-#### Username/Password login is also supported (again only tested with 1 school)
+#### Accounts that log in with a username and password are also supported 
 
 Use the login method `username` when creating a profile. It will ask for 3 fields:
 
