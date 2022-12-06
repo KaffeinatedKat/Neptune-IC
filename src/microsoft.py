@@ -32,7 +32,7 @@ while True:
                 f = open("saml.txt", "w")
                 f.write(newString[13:newString.rfind("&")])
                 f.close()
-                print("saml.txt successfully created")
+                print("saml.txt successfully created, this will be used when creating a microsoft profile in neptune")
                 driver.close()
                 exit()
 
