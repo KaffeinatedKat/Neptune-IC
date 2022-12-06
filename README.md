@@ -44,7 +44,7 @@ Use the login method `microsoft` when creating a profile. It will ask for 3 fiel
 
 - IC URL (the url to your schools infinite campus site)
 - IC Login URL Path (the path of the url of the SSO button)
-- SAMLResponce (a really long identification string used by microsoft, this can be harvested with inspect element)
+- SAMLResponse (a really long identification string used by microsoft, run `python3 src/microsoft.py` in the main directory and follow the instructions to login and accuire your SAMLReponse) 
 
 
 A profile with microsoft login:
