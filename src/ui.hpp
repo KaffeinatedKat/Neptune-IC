@@ -1,6 +1,7 @@
 #pragma once
 #include <cpr/session.h>
 #include <cstdio>
+#include <iostream>
 #include <nlohmann/detail/exceptions.hpp>
 #include <string>
 #include <sstream>
@@ -273,7 +274,16 @@ struct UI {
                     Profiles.profile_json["user"][name]["login_method"] = method;
                         
                     for (int c = 0; c < 3; c++) { //  Loop through items to be set, and set each one
-                        userInput(command, prompts[c]); //  Prompt user with value from prompts[]
+                        if (prompts[c] == "SAMLResponce") {
+                            printf("Reading SAMLResponse from ../saml.txt, run `microsoft.py` in the directory below to create this file and press enter when it exists\n");
+                            userInput(command, prompts[c]);
+                            std::ifstream f("../saml.txt");
+                            std::stringstream buffer;
+                            buffer << f.rdbuf();
+                            command[0] = buffer.str();
+                        } else {
+                            userInput(command, prompts[c]); //  Prompt user with value from prompts[]
+                        }
                         if (command[0] == "?") { //  If "?" is entered at any point, help will be shown
                             newScreen("MS Profile Creation Help");
                             printf("%s\n[Return to exit]", microsoftProfileHelp().c_str());

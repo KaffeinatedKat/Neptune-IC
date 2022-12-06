@@ -29,7 +29,10 @@ while True:
                         newString += x
                         continue
                     newString += bytes.fromhex(x[:2].lower()).decode() + x[2:]
-                print(newString[13:newString.rfind("&")])
+                f = open("saml.txt", "w")
+                f.write(newString[13:newString.rfind("&")])
+                f.close()
+                print("saml.txt successfully created")
                 driver.close()
                 exit()
 
