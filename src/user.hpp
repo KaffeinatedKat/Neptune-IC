@@ -97,10 +97,16 @@ struct User {
                 Student.fetch = true;
 
             } else if (Student.login_method == "microsoft") {
-                std::string saml = Profiles.profile_json["user"][Student.profile_name]["saml"].get<std::string>(); //  SAMLResponse
-                Student.login_path = Profiles.profile_json["user"][Student.profile_name]["login_path"].get<std::string>(); //  SAMLResponse POST path
+                cpr::Session session;
                 Student.url = Profiles.profile_json["user"][Student.profile_name]["campus_url"].get<std::string>(); //  Infinite Campus URL
+                std::string saml = Profiles.profile_json["user"][Student.profile_name]["saml"].get<std::string>(); //  SAMLResponse
                 Student.parameters = cpr::Parameters{{"SAMLResponse", saml}};
+
+                session.SetUrl(cpr::Url{Student.url});
+                cpr::Response s = session.Get();
+                Student.login_path = s.text.erase(0, s.text.find("id=\"samlloginlink\"") + 25 + Student.url.length()); //  Remove till line containing the url we want, then remove 25 characters (the string we find + href) then remove the url to isolate the path
+                Student.login_path.erase(Student.login_path.find("?"));
+    
                 Student.login_url = Student.url + Student.login_path;
                 Student.fetch = true;
             }

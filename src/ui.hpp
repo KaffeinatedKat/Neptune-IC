@@ -273,8 +273,8 @@ struct UI {
 
                     //  Lists for microsoft and username json paths and names
                     if (method == "microsoft") {
-                        json_entries = new std::string[3] {"campus_url", "login_path", "saml"};
-                        prompts = new std::string[3] {"IC URL", "IC Login URL Path", "SAMLResponce"};
+                        json_entries = new std::string[2] {"campus_url", "saml"};
+                        prompts = new std::string[2] {"IC URL", "SAMLResponce"};
                     } else if (method == "username") {
                         json_entries = new std::string[3] {"campus_url", "username", "password"};
                         prompts = new std::string[3] {"IC URL", "Username", "Password"};
@@ -282,14 +282,16 @@ struct UI {
                     bool success = false;
                     Profiles.profile_json["user"][name]["login_method"] = method;
                         
-                    for (int c = 0; c < 3; c++) { //  Loop through items to be set, and set each one
-                        if (prompts[c] == "SAMLResponce") {
+                    for (int c = 0; c < json_entries->length(); c++) { //  Loop through items to be set, and set each one
+                        if (prompts[c] == "SAMLResponce") { //  This does not work, plz fix it, perferabilly remove it altogther with a better microsoft.py
                             printf("Reading SAMLResponse from ../saml.txt, run `microsoft.py` in the directory below to create this file and press enter when it exists\n");
                             userInput(command, prompts[c]);
                             std::ifstream f("../saml.txt");
                             std::stringstream buffer;
                             buffer << f.rdbuf();
                             command[0] = buffer.str();
+                            buffer.str("");
+                            f.close();
                         } else {
                             userInput(command, prompts[c]); //  Prompt user with value from prompts[]
                         }
